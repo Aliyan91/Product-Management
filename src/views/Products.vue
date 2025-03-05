@@ -41,7 +41,7 @@
         <div
           v-for="product in products"
           :key="product.id"
-          class="bg-gray-800 rounded-lg shadow-lg overflow-hidden hover:transform hover:scale-105 transition-all duration-200"
+          class="bg-gray-800 rounded-lg shadow-lg overflow-hidden hover:transform hover:scale-105 transition-all duration-200 flex flex-col"
         >
           <div class="aspect-w-16 aspect-h-9">
             <img
@@ -50,25 +50,27 @@
               class="w-full h-48 object-cover"
             />
           </div>
-          <div class="p-6">
+          <div class="p-6 flex flex-col flex-grow">
             <h3 class="text-xl font-semibold text-white mb-2">{{ product.name }}</h3>
-            <p class="text-gray-400 mb-4">{{ product.description }}</p>
-            <div class="flex items-center justify-between mb-4">
-              <span class="text-2xl font-bold text-indigo-400">${{ product.price }}</span>
-            </div>
-            <div class="flex space-x-2">
-              <button
-                @click="editProduct(product)"
-                class="flex-1 inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
-              >
-                Edit
-              </button>
-              <button
-                @click="handleDelete(product.id)"
-                class="flex-1 inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700"
-              >
-                Delete
-              </button>
+            <p class="text-gray-400 mb-4 flex-grow">{{ product.description }}</p>
+            <div class="mt-auto">
+              <div class="mb-4">
+                <span class="text-2xl font-bold text-indigo-400">${{ product.price }}</span>
+              </div>
+              <div class="flex space-x-2">
+                <button
+                  @click="editProduct(product)"
+                  class="flex-1 inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
+                >
+                  Edit
+                </button>
+                <button
+                  @click="handleDelete(product.id)"
+                  class="flex-1 inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700"
+                >
+                  Delete
+                </button>
+              </div>
             </div>
           </div>
         </div>
