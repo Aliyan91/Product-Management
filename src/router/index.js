@@ -1,9 +1,9 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from "@/views/HomeView.vue"
-import ProductsView from "@/views/Products.vue";
+import ProductsView from "@/views/Products.vue"
 import CartView from "@/views/CartView.vue"
-import Login from '@/views/Login.vue';
-import { useAuthStore } from '@/store/auth';
+import Login from '@/views/login.vue'
+import { useAuthStore } from '@/store/auth'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -31,24 +31,39 @@ const router = createRouter({
       component: CartView,
       meta: { requiresAuth: true }
     },
+    {
+      path: '/admin-login',
+      name: 'AdminLogin',
+      component: () => import('@/views/AdminLogin.vue')
+    },
+    {
+      path: '/admin-portal',
+      name: 'AdminPortal',
+      component: () => import('@/views/AdminPortal.vue'),
+    }
   ]
 })
 
-// Navigation guard
+// Navigation Guard
 router.beforeEach((to, from, next) => {
   const authStore = useAuthStore()
-  
-  // If route requires auth and user is not authenticated
+
+  // Protect user-authenticated routes
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
-    next('/login')
+    return next('/login')
   }
-  // If user is authenticated and trying to access login page
-  else if (authStore.isAuthenticated && to.name === 'login') {
-    next('/')
+
+  // Prevent logged-in users from accessing login page
+  if (authStore.isAuthenticated && to.name === 'login') {
+    return next('/')
   }
-  else {
-    next()
+
+  // Protect the admin portal
+  if (to.meta.requiresAdmin && !authStore.isAdmin) {
+    return next('/admin-login')
   }
+
+  next()
 })
 
 export default router
