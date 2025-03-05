@@ -153,6 +153,7 @@
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
 import { useToast } from 'vue-toastification';
+import { useCartStore } from '@/store/cart'
 
 const toast = useToast();
 const products = ref([]);
@@ -160,6 +161,7 @@ const loading = ref(false);
 const error = ref(null);
 const showAddModal = ref(false);
 const editingProduct = ref(null);
+const cartStore = useCartStore()
 
 const formData = ref({
   name: '',
