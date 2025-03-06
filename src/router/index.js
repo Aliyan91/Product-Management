@@ -2,8 +2,13 @@ import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from "@/views/HomeView.vue"
 import ProductsView from "@/views/Products.vue"
 import CartView from "@/views/CartView.vue"
+<<<<<<< HEAD
 import Login from '@/views/login.vue'
 import { useAuthStore } from '@/store/auth'
+=======
+import Login from '@/views/login.vue';
+import { useAuthStore } from '@/store/auth';
+>>>>>>> 9119742c15ff4eaf95a727614f6216541b5c2b20
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -17,7 +22,7 @@ const router = createRouter({
       path: '/',
       name: 'home',
       component: HomeView,
-      meta: { requiresAuth: true }
+      meta: { requiresAuth: false }
     },
     {
       path: '/products',
@@ -31,6 +36,7 @@ const router = createRouter({
       component: CartView,
       meta: { requiresAuth: true }
     },
+<<<<<<< HEAD
     {
       path: '/admin-login',
       name: 'AdminLogin',
@@ -45,6 +51,17 @@ const router = createRouter({
 })
 
 // Navigation Guard
+=======
+  //   {
+  //     path: '/',
+  //     name: 'dashboard',
+  //     component: DashboardView
+  //   },
+  ]
+})
+
+// Updated navigation guard
+>>>>>>> 9119742c15ff4eaf95a727614f6216541b5c2b20
 router.beforeEach((to, from, next) => {
   const authStore = useAuthStore()
 
