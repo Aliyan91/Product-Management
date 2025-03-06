@@ -1,81 +1,81 @@
 <template>
-  <div class="min-h-screen bg-gray-900">
-    <!-- Header Section -->
-    <div class="w-full px-6 py-8 bg-gray-800">
-      <div class="max-w-7xl mx-auto">
-        <div class="sm:flex sm:items-center sm:justify-between">
+  <div class="container mx-auto px-4 py-8">
+    <!-- New Beautiful Header with Gradient -->
+    <div class="mb-8 rounded-lg overflow-hidden shadow-2xl">
+      <div class="bg-gradient-to-r from-blue-600 via-teal-500 to-emerald-500 p-8 relative">
+        <div class="absolute inset-0 bg-black opacity-20"></div>
+        <div class="relative z-10 flex justify-between items-center">
           <div>
-            <h1 class="text-3xl font-bold text-white">Product Management</h1>
-            <p class="mt-2 text-sm text-gray-400">
-              Add, edit, or remove products
+            <h1 class="text-4xl font-bold text-white mb-2">Our Products</h1>
+            <p class="text-white text-lg opacity-90 max-w-2xl">
+              Browse our extensive collection of high-quality products.
+              Find exactly what you need at the best prices.
             </p>
           </div>
-          <div class="mt-4 sm:mt-0">
-            <button
-              @click="showAddModal = true"
-              class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-            >
-              <svg class="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
-              </svg>
-              Add Product
-            </button>
+          <div class="hidden md:block">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-24 w-24 text-white opacity-80" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+            </svg>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Loading State -->
-    <div v-if="loading" class="flex justify-center items-center h-64">
-      <div class="text-white">Loading...</div>
-    </div>
-
-    <!-- Error State -->
-    <div v-else-if="error" class="flex justify-center items-center h-64">
-      <div class="text-red-500">{{ error }}</div>
+    <!-- Sorting and Category Options -->
+    <div class="mb-6 flex items-center space-x-4">
+      <div class="flex items-center">
+        <label class="text-white mr-2">Category:</label>
+        <select v-model="selectedCategory" @change="sortProducts" class="bg-gray-700 text-white rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          <option value="all">All Categories</option>
+          <option v-for="category in productStore.categories" :key="category" :value="category">
+            {{ category }}
+          </option>
+        </select>
+      </div>
+      <div class="flex items-center">
+        <label class="text-white mr-2">Sort by:</label>
+        <select v-model="sortOption" @change="sortProducts" class="bg-gray-700 text-white rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          <option value="default">Default</option>
+          <option value="name-asc">Name (A-Z)</option>
+          <option value="name-desc">Name (Z-A)</option>
+          <option value="price-asc">Price (Low to High)</option>
+          <option value="price-desc">Price (High to Low)</option>
+          <option value="sales">Sales</option>
+        </select>
+      </div>
     </div>
 
     <!-- Products Grid -->
-    <div v-else class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        <div
-          v-for="product in products"
-          :key="product.id"
-          class="bg-gray-800 rounded-lg shadow-lg overflow-hidden hover:transform hover:scale-105 transition-all duration-200 flex flex-col"
-        >
-          <div class="aspect-w-16 aspect-h-9">
-            <img
-              :src="product.picture || 'https://placehold.co/600x400?text=Product+Image'"
-              :alt="product.name"
-              class="w-full h-48 object-cover"
-            />
-          </div>
-          <div class="p-6 flex flex-col flex-grow">
-            <h3 class="text-xl font-semibold text-white mb-2">{{ product.name }}</h3>
-            <p class="text-gray-400 mb-4 flex-grow">{{ product.description }}</p>
-            <div class="mt-auto">
-              <div class="mb-4">
-                <span class="text-2xl font-bold text-indigo-400">${{ product.price }}</span>
-              </div>
-              <div class="flex space-x-2">
-                <button
-                  @click="editProduct(product)"
-                  class="flex-1 inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
-                >
-                  Edit
-                </button>
-                <button
-                  @click="handleDelete(product.id)"
-                  class="flex-1 inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700"
-                >
-                  Delete
-                </button>
-              </div>
-            </div>
-          </div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      <div 
+        v-for="product in sortedProducts" 
+        :key="product.id" 
+        class="bg-gray-800 rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col cursor-pointer"
+        @click="showProductDetails(product)"
+      >
+        <img :src="product.picture" :alt="product.name" class="w-full h-48 object-cover">
+        <div class="p-4 flex-grow">
+          <h3 class="text-xl font-semibold text-white mb-2">{{ product.name }}</h3>
+          <p class="text-gray-400 mb-2 line-clamp-2">{{ product.description }}</p>
+          <p class="text-green-500 font-bold text-lg mb-4">${{ product.price.toFixed(2) }}</p>
+        </div>
+        <div class="p-4 pt-0">
+          <button 
+            @click.stop="handleAddToCart(product)" 
+            class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded transition-colors duration-300"
+          >
+            Add to Cart
+          </button>
         </div>
       </div>
     </div>
+
+    <!-- Product Details Modal -->
+    <ProductDetails 
+      v-if="selectedProduct" 
+      :product="selectedProduct" 
+      @close="selectedProduct = null" 
+    />
 
     <!-- Add/Edit Modal -->
     <div v-if="showAddModal" class="fixed inset-0 z-10 overflow-y-auto">
@@ -119,6 +119,21 @@
               </div>
 
               <div>
+                <label for="category" class="block text-sm font-medium text-gray-300">Category</label>
+                <select
+                  id="category"
+                  v-model="formData.category"
+                  required
+                  class="mt-1 block w-full rounded-md bg-gray-700 border-gray-600 text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                >
+                  <option value="">Select a category</option>
+                  <option v-for="category in productStore.categories" :key="category" :value="category">
+                    {{ category }}
+                  </option>
+                </select>
+              </div>
+
+              <div>
                 <label for="picture" class="block text-sm font-medium text-gray-300">Image URL</label>
                 <input
                   type="text"
@@ -152,71 +167,70 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import axios from 'axios';
+import { ref, computed } from 'vue';
 import { useToast } from 'vue-toastification';
-import { useCartStore } from '@/store/cart'
+import { useProductStore } from '@/store/products';
+import { useCartStore } from '@/store/cart';
+import ProductDetails from '@/components/ProductDetails.vue';
+import { useAuthStore } from '@/store/auth';
 
 const toast = useToast();
-const products = ref([]);
-const loading = ref(false);
-const error = ref(null);
+const productStore = useProductStore();
+const cartStore = useCartStore();
+const authStore = useAuthStore();
 const showAddModal = ref(false);
 const editingProduct = ref(null);
-const cartStore = useCartStore()
+const selectedCategory = ref('all');
+const selectedProduct = ref(null);
+const sortOption = ref('default');
+
+const filteredProducts = computed(() => {
+  return productStore.getProductsByCategory(selectedCategory.value);
+});
+
+const sortedProducts = computed(() => {
+  let sorted = [...filteredProducts.value];
+  
+  switch (sortOption.value) {
+    case 'name-asc':
+      sorted.sort((a, b) => a.name.localeCompare(b.name));
+      break;
+    case 'name-desc':
+      sorted.sort((a, b) => b.name.localeCompare(a.name));
+      break;
+    case 'price-asc':
+      sorted.sort((a, b) => a.price - b.price);
+      break;
+    case 'price-desc':
+      sorted.sort((a, b) => b.price - a.price);
+      break;
+    case 'sales':
+      sorted.sort((a, b) => b.soldCount - a.soldCount);
+      break;
+    default:
+      break;
+  }
+  
+  return sorted;
+});
 
 const formData = ref({
   name: '',
   description: '',
   price: '',
-  picture: ''
+  picture: '',
+  category: ''
 });
 
-// Fetch products
-const fetchProducts = async () => {
-  loading.value = true;
-  error.value = null;
-  try {
-    const response = await axios.get('/goods');
-    console.log('API Response:', response.data); // Debug log
-    products.value = response.data;
-  } catch (err) {
-    console.error('Error fetching products:', err);
-    error.value = 'Failed to load products';
-  } finally {
-    loading.value = false;
-  }
-};
-
 // Add new product
-const addProduct = async () => {
-  const productData = {
-    name: formData.value.name,
-    description: formData.value.description,
-    price: Number(formData.value.price),
+const addProduct = () => {
+  productStore.addProduct({
+    ...formData.value,
     picture: formData.value.picture || 'https://placehold.co/600x400?text=Product+Image'
-  };
-  
-  try {
-    console.log('Sending product data:', productData);
-    const response = await axios.post('/goods', productData);
-    console.log('Response:', response);
-
-    await fetchProducts();
-    showAddModal.value = false;
-    formData.value = {
-      name: '',
-      description: '',
-      price: '',
-      picture: ''
-    };
-    toast.success("Product added successfully! 🎉");
-    
-  } catch (err) {
-    console.error('Detailed error:', err.response || err);
-    toast.error(`Failed to add product: ${err.response?.data?.message || err.message}`);
-    error.value = `Failed to add product: ${err.response?.data?.message || err.message}`;
-  }
+  });
+  showAddModal.value = false;
+  resetForm();
+  toast.success("Product added successfully! 🎉");
 };
 
 // Edit product
@@ -227,77 +241,66 @@ const editProduct = (product) => {
 };
 
 // Update product
-const updateProduct = async () => {
-  try {
-    const updatedProduct = {
-      id: editingProduct.value.id,
-      name: formData.value.name,
-      description: formData.value.description,
-      price: Number(formData.value.price),
-      picture: formData.value.picture || 'https://placehold.co/600x400?text=Product+Image'
-    };
-    
-    await axios.put(`/goods/${editingProduct.value.id}`, updatedProduct);
-    await fetchProducts();
-    showAddModal.value = false;
-    editingProduct.value = null;
-    formData.value = {
-      name: '',
-      description: '',
-      price: '',
-      picture: ''
-    };
-    toast.success("Product updated successfully! ✨");
-    
-  } catch (err) {
-    console.error('Error updating product:', err);
-    toast.error("Failed to update product");
-    error.value = 'Failed to update product';
-  }
+const updateProduct = () => {
+  productStore.updateProduct({
+    ...formData.value,
+    id: editingProduct.value.id
+  });
+  showAddModal.value = false;
+  resetForm();
+  toast.success("Product updated successfully! ✨");
 };
 
 // Delete product
-const handleDelete = async (id) => {
+const handleDelete = (id) => {
   if (confirm('Are you sure you want to delete this product?')) {
-    try {
-      await axios.delete(`/goods/${id}`);
-      await fetchProducts();
-      toast.success("Product deleted successfully! 🗑️");
-     
-    } catch (err) {
-      console.error('Error deleting product:', err);
-      toast.error("Failed to delete product");
-      error.value = 'Failed to delete product';
-    }
+    productStore.deleteProduct(id);
+    toast.success("Product deleted successfully! 🗑️");
   }
 };
 
 // Handle form submission
-const handleSubmit = async (e) => {
-  e.preventDefault(); // Prevent default form submission
+const handleSubmit = (e) => {
+  e.preventDefault();
   if (editingProduct.value) {
-    await updateProduct();
+    updateProduct();
   } else {
-    await addProduct();
+    addProduct();
   }
-  // Close modal after submission
-  showAddModal.value = false;
+};
+
+// Reset form
+const resetForm = () => {
+  formData.value = {
+    name: '',
+    description: '',
+    price: '',
+    picture: '',
+    category: ''
+  };
+  editingProduct.value = null;
 };
 
 // Close modal and reset form
 const closeModal = () => {
   showAddModal.value = false;
-  formData.value = {
-    name: '',
-    description: '',
-    price: '',
-    picture: ''
-  };
-  editingProduct.value = null;
+  resetForm();
 };
 
-// Load products on component mount
-onMounted(() => {
-  fetchProducts();
-});
+const handleAddToCart = (product) => {
+  if (!authStore.isAuthenticated) {
+    toast.warning('PLEASE LOGIN TO CONTINUE SHOPPING');
+    return;
+  }
+  cartStore.addToCart(product);
+  toast.success(`${product.name} added to cart!`);
+};
+
+const showProductDetails = (product) => {
+  selectedProduct.value = product;
+};
+
+const sortProducts = () => {
+  // The sorting is handled in the computed property
+};
 </script>

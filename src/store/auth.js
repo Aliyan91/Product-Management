@@ -8,7 +8,7 @@ export const useAuthStore = defineStore('auth', {
   actions: {
     login(credentials) {
       // For demo purposes, using hardcoded credentials
-      if (credentials.username === 'user@example.com' && credentials.password === 'userpassword') {
+      if (credentials.username === '1122' && credentials.password === '1122') {
         this.isAuthenticated = true;
         this.user = {
           email: credentials.username,
