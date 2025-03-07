@@ -161,8 +161,8 @@
             </div>
           </div>
           
-          <!-- Default Content for Other Sections -->
-          <div v-else>
+          <!-- User Management Content -->
+          <div v-if="!isProductManagementActive && !isOrderManagementActive">
             <div class="search-filter">
               <input type="text" 
                      placeholder="Search by username or phone..." 
@@ -216,7 +216,7 @@
             </div>
           </div>
 
-          <!-- Add this in the content-body div, alongside the other management sections -->
+          <!-- Order Management Content -->
           <div v-if="isOrderManagementActive">
             <div class="search-filter">
               <input type="text" 
@@ -243,6 +243,7 @@
                 <option value="1001+">$1000+</option>
               </select>
               <button class="btn btn-search" @click="performSearch">Search</button>
+              <button class="btn btn-primary" @click="openAddOrderModal">Add Order</button>
             </div>
             
             <div class="data-table">
@@ -566,6 +567,66 @@
             </table>
           </div>
         </div>
+      </div>
+    </div>
+
+    <!-- Add Order Modal -->
+    <div v-if="showAddOrderModal" class="modal-overlay">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Add New Order</h2>
+          <button class="close-button" @click="closeAddOrderModal">&times;</button>
+        </div>
+        <form @submit.prevent="saveOrder" class="styled-form">
+          <div class="form-group">
+            <label>Order ID</label>
+            <input v-model="newOrder.orderId" type="text" required class="styled-input" />
+          </div>
+          
+          <div class="form-group">
+            <label>Order Date</label>
+            <input v-model="newOrder.orderDate" type="datetime-local" required class="styled-input" />
+          </div>
+          
+          <div class="form-group">
+            <label>Status</label>
+            <select v-model="newOrder.status" required class="styled-select">
+              <option value="" disabled>Select Status</option>
+              <option value="Pending">Pending</option>
+              <option value="Processing">Processing</option>
+              <option value="Completed">Completed</option>
+              <option value="Cancelled">Cancelled</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label>Products</label>
+            <div v-for="(product, index) in newOrder.products" :key="index" class="product-entry">
+              <div class="product-fields">
+                <input v-model="product.name" placeholder="Product Name" required class="styled-input product-name" />
+                <input v-model.number="product.quantity" type="number" min="1" placeholder="Qty" required class="styled-input product-qty" />
+                <input v-model.number="product.price" type="number" step="0.01" min="0" placeholder="Price" required class="styled-input product-price" />
+                <span class="product-subtotal">${{ (product.quantity * product.price).toFixed(2) }}</span>
+                <button type="button" class="btn-icon remove-product" @click="removeOrderProduct(index)" v-if="newOrder.products.length > 1">&times;</button>
+              </div>
+            </div>
+            
+            <div class="add-product-row">
+              <button type="button" class="btn btn-secondary add-product" @click="addOrderProduct">
+                <i class="icon-plus"></i> Add Product
+              </button>
+            </div>
+            
+            <div class="order-total">
+              <span>Total Amount: ${{ calculateOrderTotal() }}</span>
+            </div>
+          </div>
+          
+          <div class="modal-actions">
+            <button type="button" class="btn btn-secondary" @click="closeAddOrderModal">Cancel</button>
+            <button type="submit" class="btn btn-primary">Save Order</button>
+          </div>
+        </form>
       </div>
     </div>
   </div>
@@ -1279,6 +1340,78 @@ const deleteOrder = (order) => {
     orderData.value = orderData.value.filter(o => o.orderId !== order.orderId)
     console.log('Deleted order:', order.orderId)
   }
+}
+
+// Add these new refs and reactive objects for the new order functionality
+const showAddOrderModal = ref(false)
+const newOrder = reactive({
+  orderId: '',
+  products: [{ name: '', quantity: 1, price: 0 }],
+  orderDate: '',
+  totalAmount: 0,
+  status: 'Pending',
+  selected: false
+})
+
+const openAddOrderModal = () => {
+  // Generate a new Order ID
+  const now = new Date()
+  const year = now.getFullYear()
+  const month = String(now.getMonth() + 1).padStart(2, '0')
+  const day = String(now.getDate()).padStart(2, '0')
+  const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0')
+  
+  // Reset form with default values
+  Object.assign(newOrder, {
+    orderId: `ORD-${year}${month}${day}-${random}`,
+    products: [{ name: '', quantity: 1, price: 0 }],
+    orderDate: now.toISOString().slice(0, 16), // Format as YYYY-MM-DDThh:mm
+    totalAmount: 0,
+    status: 'Pending',
+    selected: false
+  })
+  
+  showAddOrderModal.value = true
+}
+
+const closeAddOrderModal = () => {
+  showAddOrderModal.value = false
+}
+
+const addOrderProduct = () => {
+  newOrder.products.push({ name: '', quantity: 1, price: 0 })
+}
+
+const removeOrderProduct = (index) => {
+  newOrder.products.splice(index, 1)
+}
+
+const calculateOrderTotal = () => {
+  return newOrder.products
+    .reduce((total, product) => total + (product.quantity * product.price), 0)
+    .toFixed(2)
+}
+
+const saveOrder = () => {
+  // Calculate the total amount
+  newOrder.totalAmount = parseFloat(calculateOrderTotal())
+  
+  // Create a new order object
+  const newOrderEntry = {
+    orderId: newOrder.orderId,
+    products: [...newOrder.products],
+    orderDate: new Date(newOrder.orderDate).toISOString(),
+    totalAmount: newOrder.totalAmount,
+    status: newOrder.status,
+    selected: false
+  }
+  
+  // Add to orderData
+  orderData.value.push(newOrderEntry)
+  
+  // Close modal
+  showAddOrderModal.value = false
+  console.log('Order saved:', newOrderEntry)
 }
 </script>
 
@@ -2126,5 +2259,90 @@ i {
   background-color: white;
   cursor: pointer;
   min-width: 150px;
+}
+
+.product-entry {
+  margin-bottom: 12px;
+  background-color: #f8f9fa;
+  padding: 12px;
+  border-radius: 8px;
+}
+
+.product-fields {
+  display: grid;
+  grid-template-columns: 3fr 1fr 1fr 1fr auto;
+  gap: 10px;
+  align-items: center;
+}
+
+.product-name {
+  grid-column: 1;
+}
+
+.product-qty {
+  grid-column: 2;
+}
+
+.product-price {
+  grid-column: 3;
+}
+
+.product-subtotal {
+  grid-column: 4;
+  text-align: right;
+  font-weight: 500;
+}
+
+.remove-product {
+  grid-column: 5;
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.add-product-row {
+  margin-top: 16px;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.add-product {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #e9ecef;
+  color: #333;
+  border: 1px dashed #adb5bd;
+}
+
+.add-product:hover {
+  background-color: #dee2e6;
+}
+
+.order-total {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid #dee2e6;
+  text-align: right;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.btn-icon {
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+
+.icon-plus {
+  font-size: 14px;
 }
 </style>
