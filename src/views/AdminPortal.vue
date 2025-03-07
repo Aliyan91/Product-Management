@@ -1039,8 +1039,7 @@ const performSearch = () => {
 }
 
 const filterByStatus = () => {
-    console.log(`Editing item: ${item.name}`)
-  }
+  console.log(`Filtering by status: ${statusFilter.value}`)
 }
 
 const deleteItem = (item) => {
