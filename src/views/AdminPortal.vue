@@ -12,7 +12,7 @@
       <div class="nav-tabs">
         <div class="nav-tab" 
              v-for="(tab, index) in navTabs" 
-             :key="index"
+             :key="index" 
              :class="{ 'active': tab.isActive }"
              @click="activateTab(tab)">
           {{ tab.name }}
@@ -165,14 +165,82 @@
           <div v-else>
             <div class="search-filter">
               <input type="text" 
-                     placeholder="Search..." 
+                     placeholder="Search by username or phone..." 
                      class="search-input"
                      v-model="searchQuery"
                      @input="handleSearch"/>
               <select class="status-select" v-model="statusFilter" @change="filterByStatus">
                 <option value="all">All Status</option>
-                <option value="Active">Active</option>
-                <option value="Inactive">Inactive</option>
+                <option value="Online">Online</option>
+                <option value="Offline">Offline</option>
+              </select>
+              <button class="btn btn-search" @click="performSearch">Search</button>
+              <button class="btn btn-primary" @click="openAddUserModal">Add User</button>
+            </div>
+            
+            <div class="data-table">
+              <table>
+                <thead>
+                  <tr>
+                    <th><input type="checkbox" @change="toggleSelectAll" v-model="selectAll" /></th>
+                    <th @click="sortBy('name')">Username <i class="sort-icon"></i></th>
+                    <th @click="sortBy('phone')">Phone Number <i class="sort-icon"></i></th>
+                    <th @click="sortBy('registrationTime')">Registration Time <i class="sort-icon"></i></th>
+                    <th @click="sortBy('lastLoginTime')">Last Login <i class="sort-icon"></i></th>
+                    <th @click="sortBy('status')">Status <i class="sort-icon"></i></th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="(item, index) in filteredTableData" :key="index">
+                    <td><input type="checkbox" v-model="item.selected" @change="updateSelectAll" /></td>
+                    <td>{{ item.name }}</td>
+                    <td>{{ item.phone }}</td>
+                    <td>{{ formatDate(item.registrationTime) }}</td>
+                    <td>{{ formatDate(item.lastLoginTime) }}</td>
+                    <td>
+                      <span class="status-badge"
+                            :class="item.status === 'Online' ? 'active' : 'inactive'">
+                        {{ item.status }}
+                      </span>
+                    </td>
+                    <td>
+                      <div class="action-buttons">
+                        <button class="btn btn-edit" @click="editItem(item)">Edit</button>
+                        <button class="btn btn-delete" @click="deleteItem(item)">Delete</button>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Add this in the content-body div, alongside the other management sections -->
+          <div v-if="isOrderManagementActive">
+            <div class="search-filter">
+              <input type="text" 
+                     placeholder="Search by Order ID..." 
+                     class="search-input"
+                     v-model="searchQuery"
+                     @input="handleSearch"/>
+              <div class="date-range-filter">
+                <input type="date" 
+                       v-model="dateFilters.start" 
+                       class="styled-input"
+                       @change="filterOrders"/>
+                <span>to</span>
+                <input type="date" 
+                       v-model="dateFilters.end" 
+                       class="styled-input"
+                       @change="filterOrders"/>
+              </div>
+              <select class="amount-select" v-model="amountFilter" @change="filterByAmount">
+                <option value="all">All Amounts</option>
+                <option value="0-100">$0 - $100</option>
+                <option value="101-500">$101 - $500</option>
+                <option value="501-1000">$501 - $1000</option>
+                <option value="1001+">$1000+</option>
               </select>
               <button class="btn btn-search" @click="performSearch">Search</button>
             </div>
@@ -182,29 +250,35 @@
                 <thead>
                   <tr>
                     <th><input type="checkbox" @change="toggleSelectAll" v-model="selectAll" /></th>
-                    <th @click="sortBy('name')">Name <i class="sort-icon"></i></th>
-                    <th @click="sortBy('type')">Type <i class="sort-icon"></i></th>
-                    <th @click="sortBy('path')">Path <i class="sort-icon"></i></th>
-                    <th @click="sortBy('status')">Status <i class="sort-icon"></i></th>
+                    <th @click="sortBy('orderId')">Order ID <i class="sort-icon"></i></th>
+                    <th @click="sortBy('productCount')">Products <i class="sort-icon"></i></th>
+                    <th @click="sortBy('orderDate')">Order Date <i class="sort-icon"></i></th>
+                    <th @click="sortBy('totalAmount')">Total Amount <i class="sort-icon"></i></th>
+                    <th>Status</th>
                     <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr v-for="(item, index) in filteredTableData" :key="index">
-                    <td><input type="checkbox" v-model="item.selected" @change="updateSelectAll" /></td>
-                    <td>{{ item.name }}</td>
-                    <td>{{ item.type }}</td>
-                    <td>{{ item.path }}</td>
+                  <tr v-for="(order, index) in filteredOrderData" :key="index">
+                    <td><input type="checkbox" v-model="order.selected" @change="updateSelectAll" /></td>
+                    <td>{{ order.orderId }}</td>
+                    <td>
+                      <button class="btn-link" @click="viewOrderDetails(order)">
+                        {{ order.products.length }} items
+                      </button>
+                    </td>
+                    <td>{{ formatDate(order.orderDate) }}</td>
+                    <td>${{ order.totalAmount.toFixed(2) }}</td>
                     <td>
                       <span class="status-badge"
-                            :class="item.status === 'Active' ? 'active' : 'inactive'">
-                        {{ item.status }}
+                            :class="getOrderStatusClass(order.status)">
+                        {{ order.status }}
                       </span>
                     </td>
                     <td>
                       <div class="action-buttons">
-                        <button class="btn btn-edit" @click="editItem(item)">Edit</button>
-                        <button class="btn btn-delete" @click="deleteItem(item)">Delete</button>
+                        <button class="btn btn-edit" @click="editOrder(order)">Edit</button>
+                        <button class="btn btn-delete" @click="deleteOrder(order)">Delete</button>
                       </div>
                     </td>
                   </tr>
@@ -386,6 +460,114 @@
         </form>
       </div>
     </div>
+
+    <!-- Add User Modal -->
+    <div v-if="showAddUserModal" class="modal-overlay">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Add New User</h2>
+          <button class="close-button" @click="closeAddUserModal">&times;</button>
+        </div>
+        <form @submit.prevent="saveUser" class="styled-form">
+          <div class="form-group">
+            <label>Username</label>
+            <input v-model="newUser.username" type="text" required class="styled-input" />
+          </div>
+          <div class="form-group">
+            <label>Phone Number</label>
+            <input v-model="newUser.phone" type="tel" required class="styled-input" 
+                   pattern="[0-9]{10}" title="Please enter a valid 10-digit phone number"/>
+          </div>
+          <div class="form-group">
+            <label>Email</label>
+            <input v-model="newUser.email" type="email" required class="styled-input" />
+          </div>
+          <div class="form-group">
+            <label>Role</label>
+            <select v-model="newUser.role" required class="styled-select">
+              <option value="" disabled>Select Role</option>
+              <option value="Admin">Admin</option>
+              <option value="User">User</option>
+              <option value="Manager">Manager</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Department</label>
+            <select v-model="newUser.department" required class="styled-select">
+              <option value="" disabled>Select Department</option>
+              <option value="IT">IT</option>
+              <option value="HR">HR</option>
+              <option value="Sales">Sales</option>
+              <option value="Marketing">Marketing</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Password</label>
+            <input v-model="newUser.password" type="password" required class="styled-input" />
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="btn btn-secondary" @click="closeAddUserModal">Cancel</button>
+            <button type="submit" class="btn btn-primary">Save User</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Order Details Modal -->
+    <div v-if="showOrderDetailsModal" class="modal-overlay">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Order Details - #{{ selectedOrder.orderId }}</h2>
+          <button class="close-button" @click="closeOrderDetailsModal">&times;</button>
+        </div>
+        <div class="order-details">
+          <div class="order-info">
+            <div class="info-group">
+              <label>Order ID:</label>
+              <span>{{ selectedOrder.orderId }}</span>
+            </div>
+            <div class="info-group">
+              <label>Order Date:</label>
+              <span>{{ formatDate(selectedOrder.orderDate) }}</span>
+            </div>
+            <div class="info-group">
+              <label>Status:</label>
+              <span :class="getOrderStatusClass(selectedOrder.status)">
+                {{ selectedOrder.status }}
+              </span>
+            </div>
+          </div>
+          
+          <div class="order-products">
+            <h3>Products</h3>
+            <table class="products-table">
+              <thead>
+                <tr>
+                  <th>Product Name</th>
+                  <th>Quantity</th>
+                  <th>Price</th>
+                  <th>Subtotal</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(product, index) in selectedOrder.products" :key="index">
+                  <td>{{ product.name }}</td>
+                  <td>{{ product.quantity }}</td>
+                  <td>${{ product.price.toFixed(2) }}</td>
+                  <td>${{ (product.quantity * product.price).toFixed(2) }}</td>
+                </tr>
+              </tbody>
+              <tfoot>
+                <tr>
+                  <td colspan="3" class="text-right"><strong>Total:</strong></td>
+                  <td>${{ selectedOrder.totalAmount.toFixed(2) }}</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -485,6 +667,17 @@ const productData = ref(JSON.parse(localStorage.getItem('products')) || [])
 // Default table data
 const currentTableData = ref([
   {
+    name: 'John Doe',
+    phone: '1234567890',
+    email: 'john@example.com',
+    type: 'User',
+    path: '/users/john',
+    status: 'Online',
+    registrationTime: '2024-01-15T10:30:00',
+    lastLoginTime: '2024-03-20T15:45:00',
+    selected: false
+  },
+  {
     name: 'System Configuration',
     type: 'System',
     path: '/system/config',
@@ -535,6 +728,7 @@ const showAddProductModal = ref(false)
 const homepageError = ref('')
 const metricFilter = ref('')
 const showEditProductModal = ref(false)
+const showAddUserModal = ref(false)
 
 // Add these new refs and reactive objects
 const editingProduct = reactive({
@@ -566,8 +760,21 @@ const newProduct = reactive({
   viewCount: 0
 })
 
+const newUser = reactive({
+  username: '',
+  phone: '',
+  email: '',
+  role: '',
+  department: '',
+  password: '',
+  status: 'Offline',
+  registrationTime: null,
+  lastLoginTime: null
+})
+
 // Computed properties
 const isProductManagementActive = computed(() => activeSection.value === 'Product Management')
+const isOrderManagementActive = computed(() => activeSection.value === 'Order Management')
 
 const filteredProductData = computed(() => {
   let data = [...productData.value]
@@ -601,8 +808,7 @@ const filteredTableData = computed(() => {
     const query = searchQuery.value.toLowerCase()
     data = data.filter(item => 
       item.name.toLowerCase().includes(query) ||
-      item.type.toLowerCase().includes(query) ||
-      item.path.toLowerCase().includes(query)
+      (item.phone && item.phone.includes(query))
     )
   }
   
@@ -917,6 +1123,162 @@ const editorConfig = {
   content_style: 'body { font-family: -apple-system, BlinkMacSystemFont, San Francisco, Segoe UI, Roboto, Helvetica Neue, sans-serif; font-size: 14px; }',
   skin: 'oxide',
   content_css: 'default'
+}
+
+// Add these new methods
+const openAddUserModal = () => {
+  Object.assign(newUser, {
+    username: '',
+    phone: '',
+    email: '',
+    role: '',
+    department: '',
+    password: '',
+    status: 'Offline',
+    registrationTime: null,
+    lastLoginTime: null
+  })
+  showAddUserModal.value = true
+}
+
+const closeAddUserModal = () => {
+  showAddUserModal.value = false
+}
+
+const saveUser = () => {
+  const now = new Date().toISOString()
+  const newUserEntry = {
+    name: newUser.username,
+    phone: newUser.phone,
+    email: newUser.email,
+    type: newUser.role,
+    path: `/users/${newUser.username.toLowerCase()}`,
+    status: 'Offline',
+    registrationTime: now,
+    lastLoginTime: now,
+    department: newUser.department,
+    selected: false
+  }
+
+  currentTableData.value.push(newUserEntry)
+  showAddUserModal.value = false
+  console.log('User saved:', newUserEntry)
+}
+
+// Add this new method for date formatting
+const formatDate = (dateString) => {
+  if (!dateString) return 'N/A'
+  return new Date(dateString).toLocaleString()
+}
+
+// Add these to your script setup section
+const showOrderDetailsModal = ref(false)
+const selectedOrder = ref(null)
+const dateFilters = reactive({
+  start: '',
+  end: ''
+})
+const amountFilter = ref('all')
+
+// Sample order data
+const orderData = ref([
+  {
+    orderId: 'ORD-2024-001',
+    products: [
+      { name: 'Product 1', quantity: 2, price: 29.99 },
+      { name: 'Product 2', quantity: 1, price: 49.99 }
+    ],
+    orderDate: '2024-03-20T10:30:00',
+    totalAmount: 109.97,
+    status: 'Completed',
+    selected: false
+  },
+  {
+    orderId: 'ORD-2024-002',
+    products: [
+      { name: 'Product 3', quantity: 1, price: 99.99 }
+    ],
+    orderDate: '2024-03-21T15:45:00',
+    totalAmount: 99.99,
+    status: 'Processing',
+    selected: false
+  }
+])
+
+// Computed property for filtered orders
+const filteredOrderData = computed(() => {
+  let data = [...orderData.value]
+  
+  // Apply date filter
+  if (dateFilters.start && dateFilters.end) {
+    data = data.filter(order => {
+      const orderDate = new Date(order.orderDate)
+      const start = new Date(dateFilters.start)
+      const end = new Date(dateFilters.end)
+      return orderDate >= start && orderDate <= end
+    })
+  }
+  
+  // Apply amount filter
+  if (amountFilter.value !== 'all') {
+    const [min, max] = amountFilter.value.split('-').map(Number)
+    data = data.filter(order => {
+      if (amountFilter.value === '1001+') {
+        return order.totalAmount > 1000
+      }
+      return order.totalAmount >= min && order.totalAmount <= max
+    })
+  }
+  
+  // Apply search filter
+  if (searchQuery.value) {
+    const query = searchQuery.value.toLowerCase()
+    data = data.filter(order => 
+      order.orderId.toLowerCase().includes(query)
+    )
+  }
+  
+  return data
+})
+
+// Methods for order management
+const viewOrderDetails = (order) => {
+  selectedOrder.value = order
+  showOrderDetailsModal.value = true
+}
+
+const closeOrderDetailsModal = () => {
+  showOrderDetailsModal.value = false
+  selectedOrder.value = null
+}
+
+const filterOrders = () => {
+  console.log('Filtering orders by date range:', dateFilters)
+}
+
+const filterByAmount = () => {
+  console.log('Filtering by amount range:', amountFilter.value)
+}
+
+const getOrderStatusClass = (status) => {
+  const statusMap = {
+    'Completed': 'success',
+    'Pending': 'warning',
+    'Cancelled': 'danger',
+    'Processing': 'info'
+  }
+  return statusMap[status] || ''
+}
+
+const editOrder = (order) => {
+  console.log('Editing order:', order.orderId)
+}
+
+const deleteOrder = (order) => {
+  if (confirm(`Are you sure you want to delete order ${order.orderId}?`)) {
+    orderData.value = orderData.value.filter(o => o.orderId !== order.orderId)
+    console.log('Deleted order:', order.orderId)
+  }
 }
 </script>
 
@@ -1647,5 +2009,122 @@ i {
   .search-input {
     grid-column: 1 / -1;
   }
+}
+
+/* Add these new styles to your existing styles */
+.date-range-filter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.date-range-filter input[type="date"] {
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  width: 140px;
+}
+
+.btn-link {
+  background: none;
+  border: none;
+  color: #1976d2;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
+}
+
+.btn-link:hover {
+  color: #1565c0;
+}
+
+.order-details {
+  padding: 20px;
+}
+
+.order-info {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  margin-bottom: 30px;
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+}
+
+.info-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.info-group label {
+  font-weight: 500;
+  color: #666;
+  margin-bottom: 4px;
+}
+
+.products-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+.products-table th,
+.products-table td {
+  padding: 12px;
+  border-bottom: 1px solid #eee;
+  text-align: left;
+}
+
+.products-table th {
+  background-color: #f8f9fa;
+  font-weight: 600;
+}
+
+.products-table tfoot td {
+  border-top: 2px solid #ddd;
+  font-weight: 600;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.status-badge {
+  padding: 6px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.status-badge.success {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+}
+
+.status-badge.warning {
+  background-color: #fff3e0;
+  color: #e65100;
+}
+
+.status-badge.danger {
+  background-color: #ffebee;
+  color: #c62828;
+}
+
+.status-badge.info {
+  background-color: #e3f2fd;
+  color: #1565c0;
+}
+
+.amount-select {
+  height: 38px;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  background-color: white;
+  cursor: pointer;
+  min-width: 150px;
 }
 </style>
