@@ -1372,6 +1372,101 @@ const saveOrder = () => {
   showAddOrderModal.value = false
   console.log('Order saved:', newOrderEntry)
 }
+
+// Add these methods
+const editItem = (product) => {
+  // Copy product data to editingProduct
+  Object.assign(editingProduct, {
+    category: product.category,
+    displayCategory: product.displayCategory,
+    productName: product.productName,
+    price: product.price,
+    coverImage: product.coverImage,
+    overview: product.overview,
+    details: product.details,
+    stock: product.stock,
+    showOnHomepage: product.showOnHomepage,
+    salesVolume: product.salesVolume,
+    viewCount: product.viewCount
+  })
+  showEditProductModal.value = true
+}
+
+const handleImageUpload = (event) => {
+  const file = event.target.files[0]
+  if (file) {
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      newProduct.coverImage = e.target.result
+    }
+    reader.readAsDataURL(file)
+  }
+}
+
+const saveProduct = () => {
+  // Validate homepage product limit
+  if (newProduct.showOnHomepage) {
+    const categoryProducts = productData.value.filter(p => 
+      p.category === newProduct.category && p.showOnHomepage
+    )
+    if (categoryProducts.length >= 6) {
+      homepageError.value = 'Maximum 6 products per category can be shown on homepage'
+      return
+    }
+  }
+
+  // Create new product object
+  const product = {
+    ...newProduct,
+    salesVolume: 0,
+    viewCount: 0,
+    selected: false,
+    status: 'Active'
+  }
+
+  // Add to productData
+  productData.value.push(product)
+  
+  // Update localStorage
+  localStorage.setItem('products', JSON.stringify(productData.value))
+  
+  // Reset form and close modal
+  Object.assign(newProduct, {
+    category: '',
+    displayCategory: '',
+    productName: '',
+    price: 0,
+    coverImage: '',
+    overview: '',
+    details: '',
+    stock: 0,
+    showOnHomepage: false
+  })
+  homepageError.value = ''
+  showAddProductModal.value = false
+}
+
+const openAddProductModal = () => {
+  // Reset form values
+  Object.assign(newProduct, {
+    category: '',
+    displayCategory: '',
+    productName: '',
+    price: 0,
+    coverImage: '',
+    overview: '',
+    details: '',
+    stock: 0,
+    showOnHomepage: false
+  })
+  homepageError.value = ''
+  showAddProductModal.value = true
+}
+
+const closeAddProductModal = () => {
+  showAddProductModal.value = false
+  homepageError.value = ''
+}
 </script>
 
 <style scoped>
