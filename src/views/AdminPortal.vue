@@ -77,27 +77,11 @@
               <div v-for="(category, index) in systemCategories" 
                    :key="index" 
                    class="menu-item"
-                   :class="{ 'active': category.isActive }"
-                   @click="toggleCategory(category)">
-                <div class="menu-item-content">
+                   :class="{ 'active': category.isActive }">
+                <div class="menu-item-content" @click="toggleCategory(category)">
                   <i :class="category.icon"></i>
                   <span class="menu-text">{{ category.name }}</span>
-                  <span class="menu-chevron" v-if="category.subcategories && category.subcategories.length">
-                    <i :class="category.isExpanded ? 'icon-chevron-up' : 'icon-chevron-down'"></i>
-                  </span>
                 </div>
-                <transition name="fade">
-                  <div v-if="category.isExpanded && category.subcategories && category.subcategories.length"
-                       class="submenu">
-                    <div v-for="(subcat, subIndex) in category.subcategories"
-                         :key="subIndex"
-                         class="submenu-item"
-                         @click.stop="selectSubcategory(category, subcat)">
-                      <i :class="subcat.icon"></i>
-                      <span class="menu-text">{{ subcat.name }}</span>
-                    </div>
-                  </div>
-                </transition>
               </div>
             </div>
           </div>
@@ -109,7 +93,6 @@
         <div class="content-header">
           <h1>{{ currentPage.title }}</h1>
           <div class="header-actions">
-            <button class="btn btn-primary" @click="addNew">+ New</button>
             <button class="btn btn-secondary" @click="exportData">Export</button>
             <button class="btn btn-danger" @click="clearAllProducts">Clear All Products</button>
           </div>
@@ -130,13 +113,10 @@
                 <option value="Inactive">Inactive</option>
               </select>
               <select class="metric-select" v-model="metricFilter" @change="sortByMetric">
-                <option value="">Sort by Metric</option>
-                <option value="stock">Inventory (Low to High)</option>
-                <option value="stock-desc">Inventory (High to Low)</option>
-                <option value="salesVolume">Sales (Low to High)</option>
-                <option value="salesVolume-desc">Sales (High to Low)</option>
-                <option value="viewCount">Views (Low to High)</option>
-                <option value="viewCount-desc">Views (High to Low)</option>
+                <option value="">All Products</option>
+                <option value="inventory">Inventory Products</option>
+                <option value="sales">Sales Products</option>
+                <option value="views">Most Viewed Products</option>
               </select>
               <button class="btn btn-search" @click="performSearch">Search</button>
               <button class="btn btn-primary" @click="openAddProductModal">Add Product</button>
@@ -272,7 +252,23 @@
           </div>
           <div class="form-group">
             <label>Cover Image</label>
-            <input type="file" @change="handleImageUpload" accept="image/*" class="styled-file-input" />
+            <div class="file-upload-container">
+              <input 
+                type="file" 
+                @change="handleImageUpload" 
+                accept="image/*" 
+                class="file-input" 
+                id="file-upload"
+              />
+              <label for="file-upload" class="file-upload-label">
+                <i class="icon-upload"></i>
+                <span>Choose a file or drag it here</span>
+              </label>
+              <div v-if="newProduct.coverImage" class="image-preview-container">
+                <img :src="newProduct.coverImage" class="preview-image" alt="Preview" />
+                <button class="remove-image" @click="removeImage">×</button>
+              </div>
+            </div>
           </div>
           <div class="form-group">
             <label>Product Overview</label>
@@ -280,7 +276,11 @@
           </div>
           <div class="form-group">
             <label>Product Details</label>
-            <textarea v-model="newProduct.details" class="styled-textarea rich-text-editor" required></textarea>
+            <Editor
+              v-model="newProduct.details"
+              :init="editorConfig"
+              api-key="grcbe80z6fn0lp4djhrub4bmvt8014qzdv9qe9qahbenmd6t"
+            />
           </div>
           <div class="form-group">
             <label>Inventory Level</label>
@@ -339,8 +339,23 @@
           </div>
           <div class="form-group">
             <label>Cover Image</label>
-            <input type="file" @change="handleEditImageUpload" accept="image/*" class="styled-file-input" />
-            <img v-if="editingProduct.coverImage" :src="editingProduct.coverImage" class="preview-image" alt="Preview" />
+            <div class="file-upload-container">
+              <input 
+                type="file" 
+                @change="handleEditImageUpload" 
+                accept="image/*" 
+                class="file-input" 
+                id="file-upload"
+              />
+              <label for="file-upload" class="file-upload-label">
+                <i class="icon-upload"></i>
+                <span>Choose a file or drag it here</span>
+              </label>
+              <div v-if="editingProduct.coverImage" class="image-preview-container">
+                <img :src="editingProduct.coverImage" class="preview-image" alt="Preview" />
+                <button class="remove-image" @click="removeImage">×</button>
+              </div>
+            </div>
           </div>
           <div class="form-group">
             <label>Product Overview</label>
@@ -348,7 +363,11 @@
           </div>
           <div class="form-group">
             <label>Product Details</label>
-            <textarea v-model="editingProduct.details" class="styled-textarea rich-text-editor" required></textarea>
+            <Editor
+              v-model="editingProduct.details"
+              :init="editorConfig"
+              api-key="grcbe80z6fn0lp4djhrub4bmvt8014qzdv9qe9qahbenmd6t"
+            />
           </div>
           <div class="form-group">
             <label>Inventory Level</label>
@@ -373,6 +392,7 @@
 <script setup>
 import { ref, reactive, computed } from 'vue'
 import { useRouter } from 'vue-router'
+import Editor from '@tinymce/tinymce-vue'
 
 const router = useRouter()
 
@@ -430,52 +450,32 @@ const navTabs = ref([
 // Side menu categories
 const systemCategories = ref([
   {
-    name: 'User Management',
-    icon: 'icon-users',
-    isActive: true,
-    isExpanded: false,
-    path: '/users',
-    subcategories: [
-      { name: 'New User', icon: 'icon-user', path: '/users/new' },
-      { name: 'User List', icon: 'icon-list', path: '/users/list' },
-      { name: 'User Profile', icon: 'icon-profile', path: '/users/profile' }
-    ]
-  },
-  {
     name: 'Product Management',
     icon: 'icon-box',
     isActive: false,
-    isExpanded: false,
     path: '/products',
-    subcategories: [
-      { name: 'Add Product', icon: 'icon-plus', path: '/products/add' },
-      { name: 'Product List', icon: 'icon-list', path: '/products/list' },
-      { name: 'Product Details', icon: 'icon-details', path: '/products/details' }
-    ]
+    subcategories: []
   },
   {
     name: 'Category Management',
-    icon: 'icon-list',
+    icon: 'icon-folder',
     isActive: false,
-    isExpanded: false,
     path: '/categories',
-    subcategories: [
-      { name: 'New Category', icon: 'icon-plus', path: '/categories/new' },
-      { name: 'Category List', icon: 'icon-list', path: '/categories/list' },
-      { name: 'Category Edit', icon: 'icon-edit', path: '/categories/edit' }
-    ]
+    subcategories: []
   },
   {
     name: 'Order Management',
     icon: 'icon-shopping-cart',
     isActive: false,
-    isExpanded: false,
     path: '/orders',
-    subcategories: [
-      { name: 'New Order', icon: 'icon-plus', path: '/orders/new' },
-      { name: 'Order List', icon: 'icon-list', path: '/orders/list' },
-      { name: 'Order Details', icon: 'icon-details', path: '/orders/details' }
-    ]
+    subcategories: []
+  },
+  {
+    name: 'User Management',
+    icon: 'icon-users',
+    isActive: false,
+    path: '/users',
+    subcategories: []
   }
 ])
 
@@ -572,6 +572,7 @@ const isProductManagementActive = computed(() => activeSection.value === 'Produc
 const filteredProductData = computed(() => {
   let data = [...productData.value]
   
+  // First apply search filter if exists
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase()
     data = data.filter(item => 
@@ -580,18 +581,14 @@ const filteredProductData = computed(() => {
     )
   }
   
+  // Apply status filter if not 'all'
   if (statusFilter.value !== 'all') {
     data = data.filter(item => item.status === statusFilter.value)
   }
   
+  // Apply display category filter
   if (metricFilter.value) {
-    const [metric, direction] = metricFilter.value.split('-')
-    data.sort((a, b) => {
-      if (direction === 'desc') {
-        return b[metric] - a[metric]
-      }
-      return a[metric] - b[metric]
-    })
+    data = data.filter(item => item.displayCategory === metricFilter.value)
   }
   
   return data
@@ -665,29 +662,12 @@ const toggleFullScreen = () => {
 }
 
 const toggleCategory = (category) => {
-  category.isExpanded = !category.isExpanded
-  
-  if (!category.isExpanded) return
-  
-  systemCategories.value.forEach(cat => {
-    if (cat !== category) cat.isExpanded = false
-  })
-  
   systemCategories.value.forEach(cat => {
     cat.isActive = (cat === category)
   })
   activeSection.value = category.name
   currentPage.value.title = category.name
-}
-
-const selectSubcategory = (category, subcategory) => {
-  systemCategories.value.forEach(cat => {
-    cat.isActive = false
-  })
-  category.isActive = true
-  activeSection.value = category.name
-  currentPage.value.title = `${category.name} - ${subcategory.name}`
-  navigateTo(subcategory.path)
+  navigateTo(category.path)
 }
 
 const logout = () => {
@@ -737,7 +717,49 @@ const addNew = () => {
 }
 
 const exportData = () => {
-  console.log('Exporting data')
+  if (isProductManagementActive.value) {
+    // Define CSV headers
+    const headers = [
+      'Product Name',
+      'Category',
+      'Price',
+      'Stock',
+      'Status',
+      'Sales Volume',
+      'View Count',
+      'Show on Homepage'
+    ]
+
+    // Convert products to CSV format
+    const csvContent = [
+      headers.join(','), // Add headers as first row
+      ...productData.value.map(product => [
+        `"${product.productName}"`,  // Wrap in quotes to handle commas in names
+        `"${product.category}"`,
+        product.price,
+        product.stock,
+        `"${product.status}"`,
+        product.salesVolume,
+        product.viewCount,
+        product.showOnHomepage
+      ].join(','))
+    ].join('\n')
+
+    // Create blob and download link
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    const link = document.createElement('a')
+    const url = URL.createObjectURL(blob)
+    
+    link.setAttribute('href', url)
+    link.setAttribute('download', 'products.csv')
+    link.style.visibility = 'hidden'
+    
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  } else {
+    console.log('Export is only available on the Product Management page')
+  }
 }
 
 const openAddProductModal = () => {
@@ -790,6 +812,7 @@ const saveProduct = () => {
   const newProductEntry = {
     productName: newProduct.productName,
     category: newProduct.category,
+    displayCategory: newProduct.displayCategory,
     price: newProduct.price,
     stock: newProduct.stock,
     status: newProduct.stock > 0 ? 'Active' : 'Inactive',
@@ -798,8 +821,8 @@ const saveProduct = () => {
     overview: newProduct.overview,
     details: newProduct.details,
     showOnHomepage: newProduct.showOnHomepage,
-    salesVolume: 0, // Start with 0 for new products
-    viewCount: 0    // Start with 0 for new products
+    salesVolume: 0,
+    viewCount: 0
   }
 
   // Add to productData
@@ -807,6 +830,9 @@ const saveProduct = () => {
   
   // Save to localStorage
   localStorage.setItem('products', JSON.stringify(productData.value))
+
+  // Set the metric filter to match the new product's display category
+  metricFilter.value = newProduct.displayCategory
 
   // Close modal
   showAddProductModal.value = false
@@ -865,6 +891,32 @@ const updateProduct = () => {
     localStorage.setItem('products', JSON.stringify(productData.value))
     showEditProductModal.value = false
   }
+}
+
+// Add new method for removing image
+const removeImage = () => {
+  if (showAddProductModal.value) {
+    newProduct.coverImage = ''
+  } else if (showEditProductModal.value) {
+    editingProduct.coverImage = ''
+  }
+}
+
+// Add this to your component's setup
+const editorConfig = {
+  height: 300,
+  menubar: true,
+  plugins: [
+    'advlist autolink lists link image charmap print preview anchor',
+    'searchreplace visualblocks code fullscreen',
+    'insertdatetime media table paste code help wordcount'
+  ],
+  toolbar: 'undo redo | formatselect | bold italic backcolor | \
+    alignleft aligncenter alignright alignjustify | \
+    bullist numlist outdent indent | removeformat | help',
+  content_style: 'body { font-family: -apple-system, BlinkMacSystemFont, San Francisco, Segoe UI, Roboto, Helvetica Neue, sans-serif; font-size: 14px; }',
+  skin: 'oxide',
+  content_css: 'default'
 }
 </script>
 
@@ -1199,5 +1251,401 @@ const updateProduct = () => {
 .btn-secondary:hover {
   background-color: #e9ecef;
   border-color: #ccc;
+}
+
+/* Add new styles for file upload */
+.file-upload-container {
+  width: 100%;
+  position: relative;
+}
+
+.file-input {
+  width: 0.1px;
+  height: 0.1px;
+  opacity: 0;
+  overflow: hidden;
+  position: absolute;
+  z-index: -1;
+}
+
+.file-upload-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  background-color: #f8f9fa;
+  border: 2px dashed #dee2e6;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.file-upload-label:hover {
+  background-color: #e9ecef;
+  border-color: #4CAF50;
+}
+
+.file-upload-label i {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+  color: #6c757d;
+}
+
+.file-upload-label span {
+  color: #6c757d;
+  font-size: 1rem;
+}
+
+.image-preview-container {
+  position: relative;
+  margin-top: 1rem;
+  display: inline-block;
+}
+
+.preview-image {
+  max-width: 200px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.remove-image {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.remove-image:hover {
+  background-color: #c82333;
+}
+
+/* Rich text editor styles */
+:deep(.tox-tinymce) {
+  border-radius: 8px !important;
+  border: 1px solid #ddd !important;
+}
+
+:deep(.tox-tinymce:focus-within) {
+  border-color: #4CAF50 !important;
+  box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1) !important;
+}
+
+/* Make sure the editor is responsive */
+:deep(.tox-tinymce) {
+  min-height: 300px;
+  width: 100% !important;
+}
+
+/* Tree-like structure styles */
+.menu-section {
+  padding: 10px;
+}
+
+.menu-item {
+  margin-bottom: 5px;
+}
+
+.menu-item-content {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.menu-item-content:hover {
+  background-color: rgba(76, 175, 80, 0.1);
+}
+
+.menu-item.active > .menu-item-content {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.menu-text {
+  margin-left: 10px;
+}
+
+/* Animation for submenu */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+/* Icons styling */
+i {
+  font-size: 16px;
+  width: 20px;
+  text-align: center;
+}
+
+/* Table styling */
+.data-table {
+  width: 100%;
+  overflow-x: auto;
+  margin-top: 20px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.data-table table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 800px; /* Ensure table doesn't get too cramped */
+}
+
+.data-table th {
+  background-color: #f8f9fa;
+  padding: 12px 16px;
+  text-align: left;
+  font-weight: 600;
+  color: #2c3e50;
+  border-bottom: 2px solid #eee;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.data-table th:hover {
+  background-color: #f0f0f0;
+}
+
+.data-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid #eee;
+  vertical-align: middle;
+}
+
+/* Column-specific styling */
+.data-table td:nth-child(1), /* Checkbox column */
+.data-table th:nth-child(1) {
+  width: 40px;
+  text-align: center;
+}
+
+.data-table td:nth-child(2), /* Product Name */
+.data-table th:nth-child(2) {
+  min-width: 200px;
+}
+
+.data-table td:nth-child(3), /* Price */
+.data-table th:nth-child(3) {
+  width: 100px;
+  text-align: right;
+}
+
+.data-table td:nth-child(4), /* Cover Image */
+.data-table th:nth-child(4) {
+  width: 80px;
+  text-align: center;
+}
+
+.data-table td:nth-child(5), /* Inventory */
+.data-table th:nth-child(5),
+.data-table td:nth-child(6), /* Sales */
+.data-table th:nth-child(6),
+.data-table td:nth-child(7), /* Views */
+.data-table th:nth-child(7) {
+  width: 100px;
+  text-align: right;
+}
+
+.data-table td:nth-child(8), /* Actions */
+.data-table th:nth-child(8) {
+  width: 150px;
+  text-align: right;
+}
+
+/* Product image styling */
+.product-image {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  border-radius: 4px;
+  display: block;
+  margin: 0 auto;
+}
+
+/* Action buttons container */
+.action-buttons {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+/* Action buttons */
+.btn-edit,
+.btn-delete {
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.btn-edit {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+}
+
+.btn-edit:hover {
+  background-color: #45a049;
+}
+
+.btn-delete {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+}
+
+.btn-delete:hover {
+  background-color: #c82333;
+}
+
+/* Status badge */
+.status-badge {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.status-badge.active {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+}
+
+.status-badge.inactive {
+  background-color: #ffebee;
+  color: #c62828;
+}
+
+/* Checkbox styling */
+.data-table input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+/* Sort icon */
+.sort-icon {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  margin-left: 4px;
+  vertical-align: middle;
+  opacity: 0.5;
+}
+
+/* Hover effect for rows */
+.data-table tbody tr:hover {
+  background-color: #f8f9fa;
+}
+
+/* Empty state */
+.data-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Responsive table container */
+@media (max-width: 1024px) {
+  .data-table {
+    margin: 0 -16px;
+    border-radius: 0;
+  }
+}
+
+/* Add or update these styles in your <style> section */
+.search-filter {
+  display: grid;
+  grid-template-columns: 1fr 150px 200px auto auto;
+  gap: 12px;
+  align-items: center;
+  background: white;
+  padding: 16px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.search-input {
+  height: 38px;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: border-color 0.3s;
+}
+
+.status-select,
+.metric-select {
+  height: 38px;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  background-color: white;
+  cursor: pointer;
+}
+
+.btn-search {
+  height: 38px;
+  padding: 0 16px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.btn-search:hover {
+  background-color: #45a049;
+}
+
+.btn-primary {
+  height: 38px;
+  padding: 0 16px;
+  background-color: #1976d2;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.btn-primary:hover {
+  background-color: #1565c0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+  .search-filter {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  
+  .search-input {
+    grid-column: 1 / -1;
+  }
 }
 </style>

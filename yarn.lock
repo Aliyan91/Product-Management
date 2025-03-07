@@ -406,6 +406,13 @@
     lightningcss "^1.29.1"
     tailwindcss "4.0.9"
 
+"@tinymce/tinymce-vue@^4.0.7":
+  version "4.0.7"
+  resolved "https://registry.npmjs.org/@tinymce/tinymce-vue/-/tinymce-vue-4.0.7.tgz"
+  integrity sha512-1esB8wGWrjPCY+rK8vy3QB1cxwXo7HLJWuNrcyPl6LOVR+QJjub0OiV/C+TUEsLN6OpCtRv+QnIqMC5vXz783Q==
+  dependencies:
+    tinymce "^5.5.0"
+
 "@types/estree@^1.0.0", "@types/estree@1.0.6":
   version "1.0.6"
   resolved "https://registry.npmjs.org/@types/estree/-/estree-1.0.6.tgz"
@@ -1282,6 +1289,16 @@ tapable@^2.2.0:
   version "2.2.1"
   resolved "https://registry.npmjs.org/tapable/-/tapable-2.2.1.tgz"
   integrity sha512-GNzQvQTOIP6RyTfE2Qxb8ZVlNmw0n88vp1szwWRimP02mnTsx3Wtn5qRdqY9w2XduFNUgvOwhNnQsjwCp+kqaQ==
+
+tinymce@^5.5.0:
+  version "5.10.9"
+  resolved "https://registry.npmjs.org/tinymce/-/tinymce-5.10.9.tgz"
+  integrity sha512-5bkrors87X9LhYX2xq8GgPHrIgJYHl87YNs+kBcjQ5I3CiUgzo/vFcGvT3MZQ9QHsEeYMhYO6a5CLGGffR8hMg==
+
+tinymce@^7.7.1:
+  version "7.7.1"
+  resolved "https://registry.npmjs.org/tinymce/-/tinymce-7.7.1.tgz"
+  integrity sha512-rMetqSgZtYbj4YPOX+gYgmlhy/sIjVlI/qlrSOul/Mpn9e0aIIG/fR0qvQSVYvxFv6OzRTge++NQyTbzLJK1NA==
 
 totalist@^3.0.0:
   version "3.0.1"
