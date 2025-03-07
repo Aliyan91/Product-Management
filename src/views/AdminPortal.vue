@@ -118,7 +118,6 @@
                 <option value="sales">Sales Products</option>
                 <option value="views">Most Viewed Products</option>
               </select>
-              <button class="btn btn-search" @click="performSearch">Search</button>
               <button class="btn btn-primary" @click="openAddProductModal">Add Product</button>
             </div>
             
@@ -174,7 +173,6 @@
                 <option value="Online">Online</option>
                 <option value="Offline">Offline</option>
               </select>
-              <button class="btn btn-search" @click="performSearch">Search</button>
               <button class="btn btn-primary" @click="openAddUserModal">Add User</button>
             </div>
             
@@ -242,7 +240,6 @@
                 <option value="501-1000">$501 - $1000</option>
                 <option value="1001+">$1000+</option>
               </select>
-              <button class="btn btn-search" @click="performSearch">Search</button>
               <button class="btn btn-primary" @click="openAddOrderModal">Add Order</button>
             </div>
             
@@ -1354,18 +1351,6 @@ const closeOrderDetailsModal = () => {
 }
 
 const filterOrders = () => {
-  // Validate that the end date isn't before the start date
-  if (dateFilters.start && dateFilters.end) {
-    const start = new Date(dateFilters.start)
-    const end = new Date(dateFilters.end)
-    
-    if (end < start) {
-      alert('End date cannot be earlier than start date')
-      dateFilters.end = dateFilters.start
-      return
-    }
-  }
-  
   console.log('Filtering orders by date range:', dateFilters)
 }
 
@@ -1467,22 +1452,6 @@ const saveOrder = () => {
   // Close modal
   showAddOrderModal.value = false
   console.log('Order saved:', newOrderEntry)
-}
-
-// Add these new methods for enhanced filter management
-const applyFilters = () => {
-  console.log('Applying all filters...')
-  // This function is purely for UX - the actual filtering is done in the computed property
-  // But you could add additional logic here if needed
-}
-
-const resetFilters = () => {
-  // Reset all filters to default values
-  searchQuery.value = ''
-  dateFilters.start = ''
-  dateFilters.end = ''
-  amountFilter.value = 'all'
-  console.log('Filters reset')
 }
 </script>
 
@@ -2415,86 +2384,5 @@ i {
 
 .icon-plus {
   font-size: 14px;
-}
-
-.filter-label {
-  font-weight: 500;
-  color: #666;
-  margin-right: 8px;
-}
-
-.date-range-filter, .amount-filter {
-  display: flex;
-  align-items: center;
-  padding: 8px 12px;
-  background-color: #f9f9f9;
-  border-radius: 6px;
-  border: 1px solid #eee;
-}
-
-.filter-actions {
-  display: flex;
-  gap: 8px;
-}
-
-/* Make the search filter grid more responsive */
-.search-filter {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: auto auto auto;
-  gap: 12px;
-}
-
-.search-input {
-  grid-column: 1 / -1;
-}
-
-.date-range-filter {
-  grid-column: 1;
-}
-
-.amount-filter {
-  grid-column: 2;
-}
-
-.filter-actions {
-  grid-column: 1;
-}
-
-.btn-primary {
-  grid-column: 2;
-  justify-self: end;
-}
-
-@media (min-width: 1200px) {
-  .search-filter {
-    grid-template-columns: 2fr 2fr 1fr 1fr;
-    grid-template-rows: auto auto;
-  }
-  
-  .search-input {
-    grid-column: 1 / 3;
-    grid-row: 1;
-  }
-  
-  .date-range-filter {
-    grid-column: 3 / 5;
-    grid-row: 1;
-  }
-  
-  .amount-filter {
-    grid-column: 1;
-    grid-row: 2;
-  }
-  
-  .filter-actions {
-    grid-column: 2;
-    grid-row: 2;
-  }
-  
-  .btn-primary {
-    grid-column: 3 / 5;
-    grid-row: 2;
-  }
 }
 </style>
