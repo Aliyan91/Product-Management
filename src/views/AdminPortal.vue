@@ -965,8 +965,73 @@ const updateSelectAll = () => {
   }
 }
 
+// Update the handleSearch method to handle different search patterns
 const handleSearch = () => {
   console.log(`Searching for: ${searchQuery.value}`)
+  
+  // If in Order Management section, check for special search patterns
+  if (isOrderManagementActive.value) {
+    // Reset filters first
+    amountFilter.value = 'all'
+    dateFilters.start = ''
+    dateFilters.end = ''
+    
+    const query = searchQuery.value.trim()
+    
+    // Check if it's a date search (YYYY-MM-DD format)
+    if (/^\d{4}-\d{1,2}-\d{1,2}$/.test(query)) {
+      const searchDate = new Date(query)
+      if (!isNaN(searchDate.getTime())) {
+        // Valid date - set date filter to this specific day
+        const nextDay = new Date(searchDate)
+        nextDay.setDate(nextDay.getDate() + 1)
+        
+        dateFilters.start = query
+        dateFilters.end = nextDay.toISOString().split('T')[0]
+        return
+      }
+    }
+    
+    // Check if it's an amount range search ($100-$500 or 100-500)
+    const amountMatch = query.match(/\$?(\d+)\s*-\s*\$?(\d+)/)
+    if (amountMatch) {
+      const minAmount = parseInt(amountMatch[1])
+      const maxAmount = parseInt(amountMatch[2])
+      
+      if (!isNaN(minAmount) && !isNaN(maxAmount)) {
+        // Apply custom amount filter
+        if (minAmount === 0 && maxAmount === 100) {
+          amountFilter.value = '0-100'
+        } else if (minAmount === 101 && maxAmount === 500) {
+          amountFilter.value = '101-500'
+        } else if (minAmount === 501 && maxAmount === 1000) {
+          amountFilter.value = '501-1000'
+        } else if (minAmount > 1000) {
+          amountFilter.value = '1001+'
+        }
+        return
+      }
+    }
+    
+    // Check if it's a specific amount (like $250 or 250)
+    const singleAmountMatch = query.match(/\$?(\d+)/)
+    if (singleAmountMatch && !query.includes('-')) {
+      const amount = parseInt(singleAmountMatch[1])
+      if (!isNaN(amount)) {
+        // Determine which range this amount falls into
+        if (amount <= 100) {
+          amountFilter.value = '0-100'
+        } else if (amount <= 500) {
+          amountFilter.value = '101-500'
+        } else if (amount <= 1000) {
+          amountFilter.value = '501-1000'
+        } else {
+          amountFilter.value = '1001+'
+        }
+        return
+      }
+    }
+  }
 }
 
 const performSearch = () => {
@@ -974,151 +1039,6 @@ const performSearch = () => {
 }
 
 const filterByStatus = () => {
-  console.log(`Filtering by status: ${statusFilter.value}`)
-}
-
-const sortBy = (column) => {
-  if (sortColumn.value === column) {
-    sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc'
-  } else {
-    sortColumn.value = column
-    sortDirection.value = 'asc'
-  }
-  console.log(`Sorting by ${column} in ${sortDirection.value} order`)
-}
-
-const addNew = () => {
-  console.log('Adding new item')
-}
-
-const exportData = () => {
-  if (isProductManagementActive.value) {
-    // Define CSV headers
-    const headers = [
-      'Product Name',
-      'Category',
-      'Price',
-      'Stock',
-      'Status',
-      'Sales Volume',
-      'View Count',
-      'Show on Homepage'
-    ]
-
-    // Convert products to CSV format
-    const csvContent = [
-      headers.join(','), // Add headers as first row
-      ...productData.value.map(product => [
-        `"${product.productName}"`,  // Wrap in quotes to handle commas in names
-        `"${product.category}"`,
-        product.price,
-        product.stock,
-        `"${product.status}"`,
-        product.salesVolume,
-        product.viewCount,
-        product.showOnHomepage
-      ].join(','))
-    ].join('\n')
-
-    // Create blob and download link
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
-    const link = document.createElement('a')
-    const url = URL.createObjectURL(blob)
-    
-    link.setAttribute('href', url)
-    link.setAttribute('download', 'products.csv')
-    link.style.visibility = 'hidden'
-    
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-  } else {
-    console.log('Export is only available on the Product Management page')
-  }
-}
-
-const openAddProductModal = () => {
-  // Reset form
-  Object.assign(newProduct, {
-    category: '',
-    productName: '',
-    price: 0,
-    coverImage: '',
-    overview: '',
-    details: '',
-    stock: 0,
-    showOnHomepage: false,
-    salesVolume: 0,
-    viewCount: 0
-  })
-  homepageError.value = ''
-  showAddProductModal.value = true
-}
-
-const closeAddProductModal = () => {
-  showAddProductModal.value = false
-}
-
-const handleImageUpload = (event) => {
-  const file = event.target.files[0]
-  if (file) {
-    const reader = new FileReader()
-    reader.onload = (e) => {
-      newProduct.coverImage = e.target.result
-    }
-    reader.readAsDataURL(file)
-  }
-}
-
-const saveProduct = () => {
-  // Validate homepage limit (6 per category)
-  if (newProduct.showOnHomepage) {
-    const homepageCount = productData.value.filter(p => 
-      p.category === newProduct.category && p.showOnHomepage
-    ).length
-    
-    if (homepageCount >= 6) {
-      homepageError.value = `Cannot add more than 6 products from ${newProduct.category} category to homepage`
-      return
-    }
-  }
-
-  // Create new product object
-  const newProductEntry = {
-    productName: newProduct.productName,
-    category: newProduct.category,
-    displayCategory: newProduct.displayCategory,
-    price: newProduct.price,
-    stock: newProduct.stock,
-    status: newProduct.stock > 0 ? 'Active' : 'Inactive',
-    selected: false,
-    coverImage: newProduct.coverImage,
-    overview: newProduct.overview,
-    details: newProduct.details,
-    showOnHomepage: newProduct.showOnHomepage,
-    salesVolume: 0,
-    viewCount: 0
-  }
-
-  // Add to productData
-  productData.value.push(newProductEntry)
-  
-  // Save to localStorage
-  localStorage.setItem('products', JSON.stringify(productData.value))
-
-  // Set the metric filter to match the new product's display category
-  metricFilter.value = newProduct.displayCategory
-
-  // Close modal
-  showAddProductModal.value = false
-  console.log('Product saved:', newProductEntry)
-}
-
-const editItem = (item) => {
-  if (isProductManagementActive.value) {
-    Object.assign(editingProduct, item)
-    showEditProductModal.value = true
-  } else {
     console.log(`Editing item: ${item.name}`)
   }
 }
