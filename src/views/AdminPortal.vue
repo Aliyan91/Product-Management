@@ -220,7 +220,7 @@
           <div v-if="isOrderManagementActive">
             <div class="search-filter">
               <input type="text" 
-                     placeholder="Search by Order ID..." 
+                     placeholder="Search by Order ID or Username..." 
                      class="search-input"
                      v-model="searchQuery"
                      @input="handleSearch"/>
@@ -252,6 +252,7 @@
                   <tr>
                     <th><input type="checkbox" @change="toggleSelectAll" v-model="selectAll" /></th>
                     <th @click="sortBy('orderId')">Order ID <i class="sort-icon"></i></th>
+                    <th @click="sortBy('username')">Username <i class="sort-icon"></i></th>
                     <th @click="sortBy('productCount')">Products <i class="sort-icon"></i></th>
                     <th @click="sortBy('orderDate')">Order Date <i class="sort-icon"></i></th>
                     <th @click="sortBy('totalAmount')">Total Amount <i class="sort-icon"></i></th>
@@ -263,6 +264,7 @@
                   <tr v-for="(order, index) in filteredOrderData" :key="index">
                     <td><input type="checkbox" v-model="order.selected" @change="updateSelectAll" /></td>
                     <td>{{ order.orderId }}</td>
+                    <td>{{ order.username }}</td>
                     <td>
                       <button class="btn-link" @click="viewOrderDetails(order)">
                         {{ order.products.length }} items
@@ -528,6 +530,10 @@
               <span>{{ selectedOrder.orderId }}</span>
             </div>
             <div class="info-group">
+              <label>Username:</label>
+              <span>{{ selectedOrder.username }}</span>
+            </div>
+            <div class="info-group">
               <label>Order Date:</label>
               <span>{{ formatDate(selectedOrder.orderDate) }}</span>
             </div>
@@ -581,6 +587,11 @@
           <div class="form-group">
             <label>Order ID</label>
             <input v-model="newOrder.orderId" type="text" required class="styled-input" />
+          </div>
+          
+          <div class="form-group">
+            <label>Username</label>
+            <input v-model="newOrder.username" type="text" required class="styled-input" />
           </div>
           
           <div class="form-group">
@@ -1245,6 +1256,7 @@ const amountFilter = ref('all')
 const orderData = ref([
   {
     orderId: 'ORD-2024-001',
+    username: 'JohnDoe',
     products: [
       { name: 'Product 1', quantity: 2, price: 29.99 },
       { name: 'Product 2', quantity: 1, price: 49.99 }
@@ -1256,12 +1268,26 @@ const orderData = ref([
   },
   {
     orderId: 'ORD-2024-002',
+    username: 'JaneSmith',
     products: [
       { name: 'Product 3', quantity: 1, price: 99.99 }
     ],
     orderDate: '2024-03-21T15:45:00',
     totalAmount: 99.99,
     status: 'Processing',
+    selected: false
+  },
+  {
+    orderId: 'ORD-2024-003',
+    username: 'RobertJohnson',
+    products: [
+      { name: 'Product 4', quantity: 3, price: 19.99 },
+      { name: 'Product 5', quantity: 2, price: 34.99 },
+      { name: 'Product 6', quantity: 1, price: 79.99 }
+    ],
+    orderDate: '2024-03-22T09:15:00',
+    totalAmount: 209.94,
+    status: 'Pending',
     selected: false
   }
 ])
@@ -1295,8 +1321,22 @@ const filteredOrderData = computed(() => {
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase()
     data = data.filter(order => 
-      order.orderId.toLowerCase().includes(query)
+      order.orderId.toLowerCase().includes(query) ||
+      order.username.toLowerCase().includes(query)
     )
+  }
+  
+  // Apply sorting if set
+  if (sortColumn.value) {
+    data.sort((a, b) => {
+      if (a[sortColumn.value] < b[sortColumn.value]) {
+        return sortDirection.value === 'asc' ? -1 : 1
+      }
+      if (a[sortColumn.value] > b[sortColumn.value]) {
+        return sortDirection.value === 'asc' ? 1 : -1
+      }
+      return 0
+    })
   }
   
   return data
@@ -1314,6 +1354,18 @@ const closeOrderDetailsModal = () => {
 }
 
 const filterOrders = () => {
+  // Validate that the end date isn't before the start date
+  if (dateFilters.start && dateFilters.end) {
+    const start = new Date(dateFilters.start)
+    const end = new Date(dateFilters.end)
+    
+    if (end < start) {
+      alert('End date cannot be earlier than start date')
+      dateFilters.end = dateFilters.start
+      return
+    }
+  }
+  
   console.log('Filtering orders by date range:', dateFilters)
 }
 
@@ -1346,6 +1398,7 @@ const deleteOrder = (order) => {
 const showAddOrderModal = ref(false)
 const newOrder = reactive({
   orderId: '',
+  username: '',
   products: [{ name: '', quantity: 1, price: 0 }],
   orderDate: '',
   totalAmount: 0,
@@ -1364,6 +1417,7 @@ const openAddOrderModal = () => {
   // Reset form with default values
   Object.assign(newOrder, {
     orderId: `ORD-${year}${month}${day}-${random}`,
+    username: '',
     products: [{ name: '', quantity: 1, price: 0 }],
     orderDate: now.toISOString().slice(0, 16), // Format as YYYY-MM-DDThh:mm
     totalAmount: 0,
@@ -1399,6 +1453,7 @@ const saveOrder = () => {
   // Create a new order object
   const newOrderEntry = {
     orderId: newOrder.orderId,
+    username: newOrder.username,
     products: [...newOrder.products],
     orderDate: new Date(newOrder.orderDate).toISOString(),
     totalAmount: newOrder.totalAmount,
@@ -1412,6 +1467,22 @@ const saveOrder = () => {
   // Close modal
   showAddOrderModal.value = false
   console.log('Order saved:', newOrderEntry)
+}
+
+// Add these new methods for enhanced filter management
+const applyFilters = () => {
+  console.log('Applying all filters...')
+  // This function is purely for UX - the actual filtering is done in the computed property
+  // But you could add additional logic here if needed
+}
+
+const resetFilters = () => {
+  // Reset all filters to default values
+  searchQuery.value = ''
+  dateFilters.start = ''
+  dateFilters.end = ''
+  amountFilter.value = 'all'
+  console.log('Filters reset')
 }
 </script>
 
@@ -2344,5 +2415,86 @@ i {
 
 .icon-plus {
   font-size: 14px;
+}
+
+.filter-label {
+  font-weight: 500;
+  color: #666;
+  margin-right: 8px;
+}
+
+.date-range-filter, .amount-filter {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  background-color: #f9f9f9;
+  border-radius: 6px;
+  border: 1px solid #eee;
+}
+
+.filter-actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* Make the search filter grid more responsive */
+.search-filter {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto auto auto;
+  gap: 12px;
+}
+
+.search-input {
+  grid-column: 1 / -1;
+}
+
+.date-range-filter {
+  grid-column: 1;
+}
+
+.amount-filter {
+  grid-column: 2;
+}
+
+.filter-actions {
+  grid-column: 1;
+}
+
+.btn-primary {
+  grid-column: 2;
+  justify-self: end;
+}
+
+@media (min-width: 1200px) {
+  .search-filter {
+    grid-template-columns: 2fr 2fr 1fr 1fr;
+    grid-template-rows: auto auto;
+  }
+  
+  .search-input {
+    grid-column: 1 / 3;
+    grid-row: 1;
+  }
+  
+  .date-range-filter {
+    grid-column: 3 / 5;
+    grid-row: 1;
+  }
+  
+  .amount-filter {
+    grid-column: 1;
+    grid-row: 2;
+  }
+  
+  .filter-actions {
+    grid-column: 2;
+    grid-row: 2;
+  }
+  
+  .btn-primary {
+    grid-column: 3 / 5;
+    grid-row: 2;
+  }
 }
 </style>
