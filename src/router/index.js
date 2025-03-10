@@ -4,6 +4,7 @@ import HomeView from '../views/HomeView.vue'
 import LoginView from '../views/login.vue'
 import ProductDetailView from '@/views/ProductDetailView.vue'
 import ProductManagement from '../views/ProductManagement.vue'
+import AdminProducts from '../views/AdminProducts.vue' // Added import for AdminProducts
 import UserManagement from '../views/UserManagement.vue'
 import OrderManagement from '../views/OrderManagement.vue'
 import CategoryManagement from '../views/CategoryManagement.vue'
@@ -37,6 +38,12 @@ const router = createRouter({
       path: '/admin',
       name: 'AdminPortal',
       component: AdminPortalView,
+      meta: { requiresAdmin: true }
+    },
+    {
+      path: '/admin/products', // Added new route for AdminProducts
+      name: 'AdminProducts',
+      component: AdminProducts,
       meta: { requiresAdmin: true }
     },
     {
@@ -100,6 +107,10 @@ router.beforeEach((to, from, next) => {
   // If user is authenticated and trying to access login or register
   if (authStore.isAuthenticated && (to.name === 'login' || to.name === 'register')) {
     next('/')
+  }
+  // If route requires admin and user is not admin
+  else if (to.meta.requiresAdmin && !authStore.isAdmin) {
+    next('/admin/login')
   }
   // If route requires auth and user is not authenticated
   else if (to.meta.requiresAuth && !authStore.isAuthenticated) {

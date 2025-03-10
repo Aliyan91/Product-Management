@@ -549,7 +549,6 @@ const backToAdmin = () => {
   router.push('/admin')
 }
 </script>
-
 <style scoped>
 /* Import styles from AdminPortal.css */
 @import './AdminPortal.css';

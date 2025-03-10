@@ -7,10 +7,6 @@
         </button>
       </div>
       <h1>Product Management</h1>
-      <div class="header-actions">
-        <button class="btn btn-secondary" @click="exportData">Export</button>
-        <button class="btn btn-danger" @click="clearAllProducts">Clear All Products</button>
-      </div>
     </div>
     
     <div class="content-body">

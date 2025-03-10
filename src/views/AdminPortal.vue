@@ -266,7 +266,7 @@ const systemCategories = ref([
     name: 'Product Management',
     icon: 'icon-box',
     isActive: false,
-    path: '/products',
+    path: '/admin/products',
     subcategories: []
   },
   {

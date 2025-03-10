@@ -26,6 +26,22 @@
             placeholder="Enter admin password"
           />
         </div>
+        <div class="form-group captcha-container">
+          <label>Captcha</label>
+          <div class="captcha-box">
+            <span class="captcha-text">{{ captchaText }}</span>
+            <button type="button" @click="regenerateCaptcha" class="refresh-captcha">
+              ↻
+            </button>
+          </div>
+          <input 
+            type="text" 
+            v-model.trim="captchaInput" 
+            required 
+            class="form-input"
+            placeholder="Enter the captcha text above"
+          />
+        </div>
         <button type="submit" class="btn-login">Login</button>
       </form>
     </div>
@@ -33,7 +49,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/store/auth'  // Import the auth store
 
@@ -42,8 +58,35 @@ const authStore = useAuthStore()  // Use the auth store
 const username = ref('')
 const password = ref('')
 const error = ref('')
+const captchaText = ref('')
+const captchaInput = ref('')
+
+// Generate a random captcha text
+const generateCaptcha = () => {
+  const characters = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+  let result = '';
+  const length = 6;
+  
+  for (let i = 0; i < length; i++) {
+    result += characters.charAt(Math.floor(Math.random() * characters.length));
+  }
+  
+  captchaText.value = result;
+}
+
+const regenerateCaptcha = () => {
+  generateCaptcha();
+  captchaInput.value = '';
+}
 
 const handleLogin = () => {
+  // Validate captcha first
+  if (captchaInput.value !== captchaText.value) {
+    error.value = 'Invalid captcha. Please try again.';
+    regenerateCaptcha();
+    return;
+  }
+  
   // For testing/development purposes
   console.log('Login attempt:', { username: username.value, password: password.value });
 
@@ -57,12 +100,18 @@ const handleLogin = () => {
     router.push('/admin');
   } else {
     error.value = 'Invalid username or password';
+    regenerateCaptcha();
     // Clear error after 3 seconds
     setTimeout(() => {
       error.value = '';
     }, 3000);
   }
 }
+
+// Generate captcha on component mount
+onMounted(() => {
+  generateCaptcha();
+})
 </script>
 
 <style scoped>
@@ -111,6 +160,11 @@ const handleLogin = () => {
   border: 1px solid #ddd;
   border-radius: 4px;
   font-size: 1rem;
+  color: #000; /* Changed from grey to black */
+}
+
+.form-input::placeholder {
+  color: #999;
 }
 
 .form-input:focus {
@@ -141,5 +195,43 @@ const handleLogin = () => {
   margin-bottom: 1rem;
   text-align: center;
 }
+
+.captcha-container {
+  margin-top: 0.5rem;
+}
+
+.captcha-box {
+  background-color: #f5f5f5;
+  padding: 0.75rem;
+  border-radius: 4px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  user-select: none;
+}
+
+.captcha-text {
+  font-family: 'Courier New', monospace;
+  font-size: 1.2rem;
+  font-weight: bold;
+  letter-spacing: 3px;
+  color: #333;
+  /* Add some distortion to make it harder for bots to read */
+  transform: skew(-5deg);
+}
+
+.refresh-captcha {
+  background: none;
+  border: none;
+  color: #4CAF50;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+}
+
+.refresh-captcha:hover {
+  background-color: rgba(76, 175, 80, 0.1);
+}
 </style>
-  
