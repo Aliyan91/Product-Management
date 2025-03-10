@@ -24,7 +24,7 @@
    
 
     <!-- Sorting and Category Options -->
-    <div class="mb-6 flex items-center space-x-4">
+    <div class="mb-6 flex flex-wrap items-center gap-4">
       <div class="flex items-center">
         <label class="text-white mr-2">Category:</label>
         <select v-model="selectedCategory" @change="sortProducts" class="bg-gray-700 text-white rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
@@ -34,14 +34,41 @@
           </option>
         </select>
       </div>
+      
+      
+      
+      <!-- Price Range Filter -->
       <div class="flex items-center">
-        <label class="text-white mr-2">Sort by:</label>
-        <select v-model="sortOption" @change="sortProducts" class="bg-gray-700 text-white rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-          <option value="default">Default</option>
-          <option value="name-asc">Name (A-Z)</option>
-          <option value="name-desc">Name (Z-A)</option>
-          <option value="sales">Sales</option>
+        <label class="text-white mr-2">Price Range:</label>
+        <select 
+          v-model="selectedPriceRange" 
+          @change="handlePriceRangeChange" 
+          class="bg-gray-700 text-white rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        >
+          <option value="all">All Prices</option>
+          <option v-for="range in priceRanges" :key="range.value" :value="range.value">
+            {{ range.label }}
+          </option>
+          <option value="custom">Custom Range</option>
         </select>
+      </div>
+      
+      <!-- Custom Price Range Inputs (show only when custom is selected) -->
+      <div v-if="selectedPriceRange === 'custom'" class="flex items-center space-x-2">
+        <input 
+          type="number" 
+          v-model="customPriceRange.min" 
+          placeholder="Min $" 
+          class="bg-gray-700 text-white rounded-md px-3 py-2 w-24 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        />
+        <span class="text-white">-</span>
+        <input 
+          type="number" 
+          v-model="customPriceRange.max" 
+          placeholder="Max $" 
+          class="bg-gray-700 text-white rounded-md px-3 py-2 w-24 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        />
+        
       </div>
     </div>
 
