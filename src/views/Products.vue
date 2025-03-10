@@ -21,6 +21,25 @@
       </div>
     </div>
 
+    <!-- Admin Controls -->
+    <div v-if="authStore.isAdmin" class="mb-6 flex items-center space-x-4">
+      <button 
+        @click="openAddModal" 
+        class="bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2 px-4 rounded transition-colors duration-300">
+        Add New Product
+      </button>
+      <button 
+        @click="exportToCSV" 
+        class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded transition-colors duration-300">
+        Export All Products
+      </button>
+      <button 
+        @click="confirmClearProducts" 
+        class="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded transition-colors duration-300">
+        Clear All Products
+      </button>
+    </div>
+
     <!-- Sorting and Category Options -->
     <div class="mb-6 flex items-center space-x-4">
       <div class="flex items-center">
@@ -149,7 +168,7 @@
                 type="submit"
                 class="inline-flex justify-center w-full rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:text-sm"
               >
-                {{ editingProduct ? 'Update' : 'Add' }} Product
+                {{ editingProduct ? 'Update' : 'Save' }} Product
               </button>
               <button
                 type="button"
@@ -167,7 +186,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useToast } from 'vue-toastification';
 import { useProductStore } from '@/store/products';
 import { useCartStore } from '@/store/cart';
@@ -183,6 +202,11 @@ const editingProduct = ref(null);
 const selectedCategory = ref('all');
 const selectedProduct = ref(null);
 const sortOption = ref('default');
+
+// Load products from localStorage on component mount
+onMounted(() => {
+  productStore.loadProductsFromStorage();
+});
 
 const filteredProducts = computed(() => {
   return productStore.getProductsByCategory(selectedCategory.value);
@@ -222,10 +246,17 @@ const formData = ref({
   category: ''
 });
 
+// Open add product modal
+const openAddModal = () => {
+  resetForm();
+  showAddModal.value = true;
+};
+
 // Add new product
 const addProduct = () => {
   productStore.addProduct({
     ...formData.value,
+    price: parseFloat(formData.value.price),
     picture: formData.value.picture || 'https://placehold.co/600x400?text=Product+Image'
   });
   showAddModal.value = false;
@@ -244,6 +275,7 @@ const editProduct = (product) => {
 const updateProduct = () => {
   productStore.updateProduct({
     ...formData.value,
+    price: parseFloat(formData.value.price),
     id: editingProduct.value.id
   });
   showAddModal.value = false;
@@ -256,6 +288,53 @@ const handleDelete = (id) => {
   if (confirm('Are you sure you want to delete this product?')) {
     productStore.deleteProduct(id);
     toast.success("Product deleted successfully! 🗑️");
+  }
+};
+
+// Export products to CSV
+const exportToCSV = () => {
+  const products = productStore.getAllProducts;
+  
+  if (products.length === 0) {
+    toast.warning("No products to export");
+    return;
+  }
+  
+  // Create CSV content
+  const headers = ['ID', 'Name', 'Description', 'Price', 'Category', 'Image URL'];
+  const csvContent = [
+    headers.join(','),
+    ...products.map(product => [
+      product.id,
+      `"${product.name.replace(/"/g, '""')}"`,
+      `"${product.description.replace(/"/g, '""')}"`,
+      product.price,
+      `"${product.category}"`,
+      `"${product.picture}"`
+    ].join(','))
+  ].join('\n');
+  
+  // Create a download link
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  
+  link.setAttribute('href', url);
+  link.setAttribute('download', 'products.csv');
+  link.style.visibility = 'hidden';
+  
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  
+  toast.success("Products exported successfully! 📊");
+};
+
+// Clear all products with confirmation
+const confirmClearProducts = () => {
+  if (confirm('Are you sure you want to delete ALL products? This action cannot be undone.')) {
+    productStore.clearAllProducts();
+    toast.success("All products have been cleared! 🧹");
   }
 };
 

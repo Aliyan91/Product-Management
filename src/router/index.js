@@ -4,6 +4,12 @@ import HomeView from '../views/HomeView.vue'
 import LoginView from '../views/LoginView.vue'
 import AdminPortal from '../views/AdminPortal.vue'
 import ProductDetails from '../views/ProductDetails.vue'
+import ProductManagement from '../views/ProductManagement.vue'
+import UserManagement from '../views/UserManagement.vue'
+import OrderManagement from '../views/OrderManagement.vue'
+import CategoryManagement from '../views/CategoryManagement.vue'
+import AdminLogin from '../views/AdminLogin.vue'
+import { requireAuth } from '../utils/authGuard'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -19,30 +25,45 @@ const router = createRouter({
       component: LoginView
     },
     {
+      path: '/admin/login',
+      name: 'AdminLogin',
+      component: AdminLogin
+    },
+    {
       path: '/admin',
-      name: 'admin',
-      component: AdminPortal,
+      name: 'AdminPortal',
+      component: () => import('../views/AdminPortal.vue'),
+      meta: { requiresAuth: true }
     },
     {
       path: '/product/:id',
       name: 'product-details',
       component: ProductDetails
+    },
+    {
+      path: '/products',
+      name: 'ProductManagement',
+      component: ProductManagement
+    },
+    {
+      path: '/users',
+      name: 'UserManagement',
+      component: UserManagement
+    },
+    {
+      path: '/orders',
+      name: 'OrderManagement',
+      component: OrderManagement
+    },
+    {
+      path: '/categories',
+      name: 'CategoryManagement',
+      component: CategoryManagement,
     }
   ]
 })
 
-// Navigation guard
-router.beforeEach((to, from, next) => {
-  const authStore = useAuthStore()
-  
-  // Check if the route requires authentication
-  if (to.meta.requiresAuth && !authStore.isAuthenticated) {
-    // Redirect to login page if not authenticated
-    next({ name: 'login' })
-  } else {
-    // Continue navigation
-    next()
-  }
-})
+// Add navigation guard
+router.beforeEach(requireAuth)
 
 export default router

@@ -1,5 +1,10 @@
 import { defineStore } from 'pinia'
 
+// Simple ID generation function
+function generateId() {
+  return Date.now().toString(36) + Math.random().toString(36).substring(2);
+}
+
 export const useProductStore = defineStore('products', {
   state: () => ({
     products: [
@@ -205,6 +210,7 @@ export const useProductStore = defineStore('products', {
   }),
 
   getters: {
+    getAllProducts: (state) => state.products,
     getProductsByCategory: (state) => (category) => {
       if (category === 'all') {
         return state.products
@@ -220,30 +226,52 @@ export const useProductStore = defineStore('products', {
   },
 
   actions: {
+    // Load products from localStorage
+    loadProductsFromStorage() {
+      const storedProducts = localStorage.getItem('products')
+      if (storedProducts) {
+        this.products = JSON.parse(storedProducts)
+      }
+    },
+    
+    // Save products to localStorage
+    saveProductsToStorage() {
+      localStorage.setItem('products', JSON.stringify(this.products))
+    },
+
     addProduct(product) {
       const newProduct = {
         ...product,
-        id: this.products.length + 1,
-        price: Number(product.price)
+        id: generateId(),
+        soldCount: 0,
+        viewCount: 0,
+        createdAt: new Date().toISOString()
       }
       this.products.push(newProduct)
+      this.saveProductsToStorage()
     },
 
     updateProduct(updatedProduct) {
       const index = this.products.findIndex(p => p.id === updatedProduct.id)
       if (index !== -1) {
         this.products[index] = {
+          ...this.products[index],
           ...updatedProduct,
-          price: Number(updatedProduct.price)
+          updatedAt: new Date().toISOString()
         }
+        this.saveProductsToStorage()
       }
     },
 
     deleteProduct(id) {
-      const index = this.products.findIndex(p => p.id === id)
-      if (index !== -1) {
-        this.products.splice(index, 1)
-      }
+      this.products = this.products.filter(product => product.id !== id)
+      this.saveProductsToStorage()
+    },
+
+    // Clear all products
+    clearAllProducts() {
+      this.products = []
+      this.saveProductsToStorage()
     }
   }
 })
