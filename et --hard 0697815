@@ -1,0 +1,31 @@
+[33m0697815[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mUIChanges[m[33m, [m[1;31morigin/UIChanges[m[33m, [m[1;32mmy-new-branch[m[33m)[m HEAD@{0}: checkout: moving from main to UIChanges
+[33m68ed632[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmain[m[33m)[m HEAD@{1}: pull origin main: Fast-forward
+[33m9ae1ad5[m[33m ([m[1;32mmanagement[m[33m)[m HEAD@{2}: checkout: moving from my-new-branch to main
+[33m0697815[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mUIChanges[m[33m, [m[1;31morigin/UIChanges[m[33m, [m[1;32mmy-new-branch[m[33m)[m HEAD@{3}: commit: Your commit message
+[33m36d4146[m[33m ([m[1;31morigin/orders[m[33m, [m[1;32morders[m[33m)[m HEAD@{4}: checkout: moving from orders to my-new-branch
+[33m36d4146[m[33m ([m[1;31morigin/orders[m[33m, [m[1;32morders[m[33m)[m HEAD@{5}: commit: Order Page
+[33m095a919[m HEAD@{6}: commit: Order Page
+[33m2df1f6e[m HEAD@{7}: reset: moving to HEAD
+[33m2df1f6e[m HEAD@{8}: reset: moving to HEAD
+[33m2df1f6e[m HEAD@{9}: commit: Order Page
+[33m946e288[m HEAD@{10}: commit: Order Page
+[33m35a79b7[m HEAD@{11}: commit: Order Page
+[33m807089f[m HEAD@{12}: reset: moving to HEAD
+[33m807089f[m HEAD@{13}: commit: Order Page
+[33m56571a0[m HEAD@{14}: reset: moving to HEAD
+[33m56571a0[m HEAD@{15}: reset: moving to HEAD
+[33m56571a0[m HEAD@{16}: commit: Order Page
+[33m6de3512[m[33m ([m[1;31morigin/products[m[33m, [m[1;31morigin/Users[m[33m, [m[1;32mproducts[m[33m, [m[1;32mUsers[m[33m)[m HEAD@{17}: checkout: moving from Users to orders
+[33m6de3512[m[33m ([m[1;31morigin/products[m[33m, [m[1;31morigin/Users[m[33m, [m[1;32mproducts[m[33m, [m[1;32mUsers[m[33m)[m HEAD@{18}: checkout: moving from products to Users
+[33m6de3512[m[33m ([m[1;31morigin/products[m[33m, [m[1;31morigin/Users[m[33m, [m[1;32mproducts[m[33m, [m[1;32mUsers[m[33m)[m HEAD@{19}: reset: moving to HEAD
+[33m6de3512[m[33m ([m[1;31morigin/products[m[33m, [m[1;31morigin/Users[m[33m, [m[1;32mproducts[m[33m, [m[1;32mUsers[m[33m)[m HEAD@{20}: commit: Fixes
+[33m49774e9[m HEAD@{21}: commit: Resolved merge conflict
+[33m4df6039[m HEAD@{22}: commit: Added new changes to products branch
+[33m335dd60[m[33m ([m[1;31morigin/admin[m[33m, [m[1;32madmin[m[33m)[m HEAD@{23}: checkout: moving from admin to products
+[33m335dd60[m[33m ([m[1;31morigin/admin[m[33m, [m[1;32madmin[m[33m)[m HEAD@{24}: commit: admin
+[33m9ae1ad5[m[33m ([m[1;32mmanagement[m[33m)[m HEAD@{25}: checkout: moving from management to admin
+[33m9ae1ad5[m[33m ([m[1;32mmanagement[m[33m)[m HEAD@{26}: checkout: moving from main to management
+[33m9ae1ad5[m[33m ([m[1;32mmanagement[m[33m)[m HEAD@{27}: pull origin main: Fast-forward
+[33m27c68fa[m HEAD@{28}: checkout: moving from login to main
+[33m4a1745d[m[33m ([m[1;31morigin/login[m[33m, [m[1;32mlogin[m[33m)[m HEAD@{29}: Branch: renamed refs/heads/login-page to refs/heads/login
+[33m4a1745d[m[33m ([m[1;31morigin/login[m[33m, [m[1;32mlogin[m[33m)[m HEAD@{31}: commit (initial): Initial commit - Project setup
