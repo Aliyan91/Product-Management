@@ -535,7 +535,6 @@ const closeEditCategoryModal = () => {
 const router = useRouter()
 const backToAdmin = () => router.push('/admin')
 </script>
-
 <style scoped>
 /* Import styles from AdminPortal.css */
 @import './AdminPortal.css';
@@ -888,4 +887,4 @@ tr:hover {
     padding: 15px;
   }
 }
-</style> 
+</style>

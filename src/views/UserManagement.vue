@@ -551,6 +551,7 @@ const backToAdmin = () => {
 </script>
 <style scoped>
 /* Import styles from AdminPortal.css */
+/* Import styles from AdminPortal.css */
 @import './AdminPortal.css';
 
 /* User-specific styles with better contrast */
@@ -621,22 +622,24 @@ const backToAdmin = () => {
   }
 }
 
+/* Modified: Changed status text color */
 .status-badge {
   padding: 4px 10px;
   border-radius: 50px;
   font-size: 12px;
   font-weight: 600;
   letter-spacing: 0.5px;
+  color: #333; /* Changed the base text color */
 }
 
 .status-badge.active {
   background-color: rgba(46, 139, 87, 0.15);
-  color: #2E8B57;
+  color: #1a5a36; /* Darker green for better contrast */
 }
 
 .status-badge.inactive {
   background-color: rgba(211, 47, 47, 0.15);
-  color: #D32F2F;
+  color: #8a1c1c; /* Darker red for better contrast */
 }
 
 /* Increase table row spacing for better readability */
@@ -674,11 +677,20 @@ const backToAdmin = () => {
   cursor: pointer;
 }
 
-/* Ensure modal content has proper padding */
+/* Modified: Changed modal text color to black */
 .modal-content {
   max-height: 80vh;
   overflow-y: auto;
-  padding-bottom: 70px; /* Add extra padding at bottom to ensure buttons are visible */
+  padding-bottom: 70px;
+  color: #000; /* Changed text color to black */
+}
+
+/* Ensure all form elements in modal have black text */
+.modal-content input,
+.modal-content select,
+.modal-content label,
+.modal-content h2 {
+  color: #000;
 }
 
 /* Notification styles */
@@ -708,6 +720,7 @@ const backToAdmin = () => {
   to { opacity: 1; transform: translateY(0); }
 }
 
+/* Modified: Adjusted header layout for Back button position */
 .content-header {
   display: flex;
   align-items: center;
@@ -720,16 +733,67 @@ const backToAdmin = () => {
   margin: 0;
   font-size: 24px;
   font-weight: 600;
-  order: -1; /* This moves the title to the left */
-  margin-right: auto; /* Pushes other elements to the right */
+  flex: 1;
+  text-align: center;
 }
 
+/* Modified: Positioned back button to the left */
 .back-button-container {
-  margin-right: 15px;
-  order: 0;
+  margin-right: auto;
+  order: -1; /* Ensures it's first in the flex order */
 }
 
 .header-actions {
-  order: 1;
+  margin-left: auto;
 }
-</style> 
+
+/* Modified: Shortened search bar */
+.search-input {
+  width: 200px; /* Shortened from default */
+  max-width: 100%;
+}
+
+.search-filter {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.modal-content {
+  max-height: 80vh;
+  overflow-y: auto;
+  padding-bottom: 70px;
+  color: #000 !important; /* Force black text for modal content */
+}
+
+/* Ensure all form elements in modal have black text */
+.modal-content input,
+.modal-content select,
+.modal-content label,
+.modal-content h2 {
+  color: #000 !important; /* Force black text */
+}
+
+/* Ensure search box has black text */
+.search-input {
+  width: 200px;
+  max-width: 100%;
+  color: #000 !important; /* Force black text in search input */
+}
+
+/* Add placeholder color for search input */
+.search-input::placeholder {
+  color: #666 !important; /* Darker gray for placeholder text */
+  opacity: 1; /* Ensure placeholder is visible */
+}
+
+/* Ensure select dropdown has black text */
+.status-select {
+  color: #000 !important;
+}
+
+/* Ensure select dropdown options have black text */
+.status-select option {
+  color: #000 !important;
+}
+</style>
