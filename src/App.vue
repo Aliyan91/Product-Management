@@ -53,6 +53,9 @@
                 </RouterLink>
               </div>
             </div>
+
+            <!-- Add this between the navigation links and the account/cart icons in the desktop navbar -->
+            
           </div>
           
           <!-- Mobile menu button -->
@@ -110,22 +113,33 @@
               </span>
             </RouterLink>
             
-            <!-- Login/Logout buttons -->
-            <RouterLink 
-              v-if="!authStore.isAuthenticated"
-              to="/login" 
-              class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors duration-300"
-            >
-              Login
-            </RouterLink>
-            
-            <button 
-              v-if="authStore.isAuthenticated"
-              @click="handleLogout" 
-              class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
-            >
-              Logout
-            </button>
+            <!-- Navigation Links -->
+            <div class="flex items-center space-x-4">
+              <!-- Regular auth buttons -->
+              <RouterLink 
+                v-if="!authStore.isAuthenticated"
+                to="/login" 
+                class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors duration-300"
+              >
+                Login
+              </RouterLink>
+              
+              <!-- Admin Login Button -->
+              <RouterLink 
+                to="/admin/login"
+                class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors duration-300"
+              >
+                Admin Login
+              </RouterLink>
+              
+              <button 
+                v-if="authStore.isAuthenticated"
+                @click="handleLogout" 
+                class="text-gray-300 hover:bg-gray-700 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
+              >
+                Logout
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -345,3 +359,20 @@ const handleLogout = () => {
   clearSearch()
 }
 </script>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: #0f172a;
+  color: #f8fafc;
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;  
+  overflow: hidden;
+}
+</style>

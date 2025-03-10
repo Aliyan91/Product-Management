@@ -8,17 +8,6 @@
           <div class="flex items-center">
             <h1 class="text-white text-xl font-bold">ShopCart</h1>
           </div>
-
-          <!-- Right side - Admin Login -->
-          <div class="flex items-center">
-            <button @click="goToAdminLogin"
-              class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-lg shadow-md transition-colors duration-300 flex items-center gap-2">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
-              </svg>
-              Admin Login
-            </button>
-          </div>
         </div>
       </div>
     </nav>

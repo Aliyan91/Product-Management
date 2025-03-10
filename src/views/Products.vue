@@ -21,24 +21,7 @@
       </div>
     </div>
 
-    <!-- Admin Controls -->
-    <div v-if="authStore.isAdmin" class="mb-6 flex items-center space-x-4">
-      <button 
-        @click="openAddModal" 
-        class="bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2 px-4 rounded transition-colors duration-300">
-        Add New Product
-      </button>
-      <button 
-        @click="exportToCSV" 
-        class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded transition-colors duration-300">
-        Export All Products
-      </button>
-      <button 
-        @click="confirmClearProducts" 
-        class="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded transition-colors duration-300">
-        Clear All Products
-      </button>
-    </div>
+   
 
     <!-- Sorting and Category Options -->
     <div class="mb-6 flex items-center space-x-4">
@@ -57,8 +40,6 @@
           <option value="default">Default</option>
           <option value="name-asc">Name (A-Z)</option>
           <option value="name-desc">Name (Z-A)</option>
-          <option value="price-asc">Price (Low to High)</option>
-          <option value="price-desc">Price (High to Low)</option>
           <option value="sales">Sales</option>
         </select>
       </div>

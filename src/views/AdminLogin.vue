@@ -35,8 +35,10 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/store/auth'  // Import the auth store
 
 const router = useRouter()
+const authStore = useAuthStore()  // Use the auth store
 const username = ref('')
 const password = ref('')
 const error = ref('')
@@ -45,13 +47,13 @@ const handleLogin = () => {
   // For testing/development purposes
   console.log('Login attempt:', { username: username.value, password: password.value });
 
-  // Check credentials (case-sensitive)
-  if (username.value === 'admin' && password.value === 'admin123') {
-    // Set admin authentication in localStorage
-    localStorage.setItem('isAdminAuthenticated', 'true');
-    // Clear any existing error
+  // Use the auth store login method
+  if (authStore.login({
+    username: username.value,
+    password: password.value
+  })) {
+    // Success - auth store will set isAuthenticated and isAdmin
     error.value = '';
-    // Redirect to admin dashboard
     router.push('/admin');
   } else {
     error.value = 'Invalid username or password';
@@ -69,7 +71,7 @@ const handleLogin = () => {
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background-color: #f5f5f5;
+  background-color: #807f7f;
 }
 
 .login-container {

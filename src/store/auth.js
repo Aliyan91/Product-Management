@@ -3,6 +3,7 @@ import { defineStore } from 'pinia'
 export const useAuthStore = defineStore('auth', {
   state: () => ({
     isAuthenticated: false,
+    isAdmin: false,
     user: null,
     orderHistory: [],
     registeredUsers: []
@@ -23,12 +24,25 @@ export const useAuthStore = defineStore('auth', {
       return true
     },
     login(credentials) {
+      // For admin login - make sure the password is consistent
+      if (credentials.username === 'admin' && credentials.password === 'admin123') {
+        this.isAuthenticated = true
+        this.isAdmin = true
+        this.user = {
+          email: credentials.username,
+          role: 'admin'
+        }
+        return true
+      }
+
+      // For regular user login
       const user = this.registeredUsers.find(
         user => user.email === credentials.username && user.password === credentials.password
       )
 
       if (user) {
         this.isAuthenticated = true
+        this.isAdmin = false
         this.user = {
           id: user.id,
           email: user.email,
@@ -38,20 +52,11 @@ export const useAuthStore = defineStore('auth', {
         return true
       }
 
-      // For demo purposes, using hardcoded credentials
-      if (credentials.username === '1122' && credentials.password === '1122') {
-        this.isAuthenticated = true;
-        this.user = {
-          email: credentials.username,
-          role: 'user'
-        }
-        return true
-      }
-
       return false
     },
     logout() {
       this.isAuthenticated = false
+      this.isAdmin = false
       this.user = null
       this.orderHistory = []
     },

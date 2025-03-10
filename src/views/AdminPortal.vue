@@ -204,8 +204,10 @@
 <script setup>
 import { ref, reactive, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/store/auth'
 
 const router = useRouter()
+const authStore = useAuthStore()
 
 // User profile
 const userProfile = reactive({
@@ -449,8 +451,8 @@ const navigateToCategory = (category) => {
 
 const logout = () => {
   console.log('Logging out...')
-  // Clear admin authentication
-  localStorage.removeItem('isAdminAuthenticated')
+  // Use the auth store logout method
+  authStore.logout()
   // Redirect to login page
   router.push('/admin/login')
 }
