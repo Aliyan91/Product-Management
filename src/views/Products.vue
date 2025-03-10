@@ -21,84 +21,51 @@
       </div>
     </div>
 
+    <!-- Admin Controls -->
+    <div v-if="authStore.isAdmin" class="mb-6 flex items-center space-x-4">
+      <button 
+        @click="openAddModal" 
+        class="bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2 px-4 rounded transition-colors duration-300">
+        Add New Product
+      </button>
+      <button 
+        @click="exportToCSV" 
+        class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded transition-colors duration-300">
+        Export All Products
+      </button>
+      <button 
+        @click="confirmClearProducts" 
+        class="bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded transition-colors duration-300">
+        Clear All Products
+      </button>
+    </div>
+
     <!-- Sorting and Category Options -->
     <div class="mb-6 flex items-center space-x-4">
       <div class="flex items-center">
         <label class="text-white mr-2">Category:</label>
-        <select 
-          v-model="selectedCategory" 
-          @change="sortProducts" 
-          class="bg-gray-700 text-white rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 w-48"
-        >
+        <select v-model="selectedCategory" @change="sortProducts" class="bg-gray-700 text-white rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
           <option value="all">All Categories</option>
-          <option 
-            v-for="category in productStore.categories" 
-            :key="category" 
-            :value="category"
-          >
+          <option v-for="category in productStore.categories" :key="category" :value="category">
             {{ category }}
           </option>
         </select>
       </div>
       <div class="flex items-center">
         <label class="text-white mr-2">Sort by:</label>
-        <select 
-          v-model="sortOption" 
-          @change="sortProducts" 
-          class="bg-gray-700 text-white rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-        >
+        <select v-model="sortOption" @change="sortProducts" class="bg-gray-700 text-white rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
           <option value="default">Default</option>
           <option value="name-asc">Name (A-Z)</option>
           <option value="name-desc">Name (Z-A)</option>
-          <option value="sales">Best Selling</option>
+          <option value="price-asc">Price (Low to High)</option>
+          <option value="price-desc">Price (High to Low)</option>
+          <option value="sales">Sales</option>
         </select>
       </div>
-      <div class="flex items-center">
-        <label class="text-white mr-2">Price Range:</label>
-        <select 
-          v-model="selectedPriceRange" 
-          @change="handlePriceRangeChange" 
-          class="bg-gray-700 text-white rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-        >
-          <option value="all">All Prices</option>
-          <option value="custom">Custom Range</option>
-          <option 
-            v-for="range in priceRanges" 
-            :key="range.value" 
-            :value="range.value"
-          >
-            {{ range.label }}
-          </option>
-        </select>
-      </div>
-      
-      <!-- Custom price range inputs -->
-      <div v-if="selectedPriceRange === 'custom'" class="flex items-center ml-4 space-x-2">
-        <input
-          type="number"
-          v-model="customPriceRange.min"
-          placeholder="Min"
-          class="w-24 bg-gray-700 text-white rounded-md px-2 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          min="0"
-        >
-        <span class="text-white">-</span>
-        <input
-          type="number"
-          v-model="customPriceRange.max"
-          placeholder="Max"
-          class="w-24 bg-gray-700 text-white rounded-md px-2 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          min="0"
-        >
-      </div>
-    </div>
-
-    <!-- Add this before the products grid -->
-    <div v-if="!hasProducts" class="text-center py-8">
-      <div class="text-white text-xl">Loading products...</div>
     </div>
 
     <!-- Products Grid -->
-    <div v-else class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
       <div 
         v-for="product in sortedProducts" 
         :key="product.id" 
@@ -121,6 +88,13 @@
         </div>
       </div>
     </div>
+
+    <!-- Product Details Modal -->
+    <ProductDetails 
+      v-if="selectedProduct" 
+      :product="selectedProduct" 
+      @close="selectedProduct = null" 
+    />
 
     <!-- Add/Edit Modal -->
     <div v-if="showAddModal" class="fixed inset-0 z-10 overflow-y-auto">
@@ -194,7 +168,7 @@
                 type="submit"
                 class="inline-flex justify-center w-full rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:text-sm"
               >
-                {{ editingProduct ? 'Update' : 'Add' }} Product
+                {{ editingProduct ? 'Update' : 'Save' }} Product
               </button>
               <button
                 type="button"
@@ -218,6 +192,7 @@ import { useProductStore } from '@/store/products';
 import { useCartStore } from '@/store/cart';
 import { useAuthStore } from '@/store/auth';
 import { useRouter, useRoute } from 'vue-router';
+import ProductDetails from '@/components/ProductDetails.vue';
 
 const router = useRouter();
 const route = useRoute();

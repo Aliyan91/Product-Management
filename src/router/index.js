@@ -1,37 +1,55 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from "@/views/HomeView.vue"
-import ProductsView from "@/views/Products.vue";
-import CartView from "@/views/CartView.vue"
-import Login from '@/views/login.vue';
-import { useAuthStore } from '@/store/auth';
-import ProductDetailView from "@/views/ProductDetailView.vue"
-import { useProductStore } from '@/store/products';
+import { useAuthStore } from '../stores/auth'
+import HomeView from '../views/HomeView.vue'
+import LoginView from '../views/LoginView.vue'
+import ProductDetails from '../views/ProductDetails.vue'
+import ProductDetailView from '@/views/ProductDetailView.vue'
+import ProductManagement from '../views/ProductManagement.vue'
+import UserManagement from '../views/UserManagement.vue'
+import OrderManagement from '../views/OrderManagement.vue'
+import CategoryManagement from '../views/CategoryManagement.vue'
+import AdminLogin from '../views/AdminLogin.vue'
+import { requireAuth } from '../utils/authGuard'
+import { useProductStore } from '@/store/products'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
-      path: '/login',
-      name: 'login',
-      component: Login
-    },
-    {
       path: '/',
       name: 'home',
-      component: HomeView,
-      meta: { requiresAuth: false }
+      component: HomeView
+    },
+    {
+      path: '/login',
+      name: 'login',
+      component: LoginView
+    },
+    {
+      path: '/admin/login',
+      name: 'AdminLogin',
+      component: AdminLogin
+    },
+    {
+      path: '/admin',
+      name: 'AdminPortal',
+      component: () => import('../views/AdminPortal.vue'),
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/product/:id',
+      name: 'product-details',
+      component: ProductDetails
     },
     {
       path: '/products',
-      name: 'products',
-      component: ProductsView,
-      meta: { requiresAuth: true }
+      name: 'ProductManagement',
+      component: ProductManagement
     },
     {
-      path: '/cart',
-      name: 'cart',
-      component: CartView,
-      meta: { requiresAuth: true }
+      path: '/users',
+      name: 'UserManagement',
+      component: UserManagement
     },
     {
       path: '/product/:id',
@@ -51,22 +69,34 @@ const router = createRouter({
       component: () => import('@/views/RegisterView.vue'),
       meta: { requiresAuth: false }
     },
-  //   {
-  //     path: '/',
-  //     name: 'dashboard',
-  //     component: DashboardView
-  //   },
+    //   {
+    //     path: '/',
+    //     name: 'dashboard',
+    //     component: DashboardView
+    //   },
+    {
+      path: '/orders',
+      name: 'OrderManagement',
+      component: OrderManagement
+    },
+    {
+      path: '/categories',
+      name: 'CategoryManagement',
+      component: CategoryManagement,
+    }
+
   ]
 })
+
 
 // Updated navigation guard
 router.beforeEach((to, from, next) => {
   const authStore = useAuthStore()
   const productStore = useProductStore()
-  
+
   // Initialize product store
   productStore.initialize()
-  
+
   // If user is authenticated and trying to access login or register
   if (authStore.isAuthenticated && (to.name === 'login' || to.name === 'register')) {
     next('/')
@@ -79,5 +109,9 @@ router.beforeEach((to, from, next) => {
     next()
   }
 })
+
+
+// Add navigation guard
+router.beforeEach(requireAuth)
 
 export default router
