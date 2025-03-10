@@ -25,28 +25,80 @@
     <div class="mb-6 flex items-center space-x-4">
       <div class="flex items-center">
         <label class="text-white mr-2">Category:</label>
-        <select v-model="selectedCategory" @change="sortProducts" class="bg-gray-700 text-white rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+        <select 
+          v-model="selectedCategory" 
+          @change="sortProducts" 
+          class="bg-gray-700 text-white rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 w-48"
+        >
           <option value="all">All Categories</option>
-          <option v-for="category in productStore.categories" :key="category" :value="category">
+          <option 
+            v-for="category in productStore.categories" 
+            :key="category" 
+            :value="category"
+          >
             {{ category }}
           </option>
         </select>
       </div>
       <div class="flex items-center">
         <label class="text-white mr-2">Sort by:</label>
-        <select v-model="sortOption" @change="sortProducts" class="bg-gray-700 text-white rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+        <select 
+          v-model="sortOption" 
+          @change="sortProducts" 
+          class="bg-gray-700 text-white rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        >
           <option value="default">Default</option>
           <option value="name-asc">Name (A-Z)</option>
           <option value="name-desc">Name (Z-A)</option>
-          <option value="price-asc">Price (Low to High)</option>
-          <option value="price-desc">Price (High to Low)</option>
-          <option value="sales">Sales</option>
+          <option value="sales">Best Selling</option>
         </select>
+      </div>
+      <div class="flex items-center">
+        <label class="text-white mr-2">Price Range:</label>
+        <select 
+          v-model="selectedPriceRange" 
+          @change="handlePriceRangeChange" 
+          class="bg-gray-700 text-white rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        >
+          <option value="all">All Prices</option>
+          <option value="custom">Custom Range</option>
+          <option 
+            v-for="range in priceRanges" 
+            :key="range.value" 
+            :value="range.value"
+          >
+            {{ range.label }}
+          </option>
+        </select>
+      </div>
+      
+      <!-- Custom price range inputs -->
+      <div v-if="selectedPriceRange === 'custom'" class="flex items-center ml-4 space-x-2">
+        <input
+          type="number"
+          v-model="customPriceRange.min"
+          placeholder="Min"
+          class="w-24 bg-gray-700 text-white rounded-md px-2 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          min="0"
+        >
+        <span class="text-white">-</span>
+        <input
+          type="number"
+          v-model="customPriceRange.max"
+          placeholder="Max"
+          class="w-24 bg-gray-700 text-white rounded-md px-2 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          min="0"
+        >
       </div>
     </div>
 
+    <!-- Add this before the products grid -->
+    <div v-if="!hasProducts" class="text-center py-8">
+      <div class="text-white text-xl">Loading products...</div>
+    </div>
+
     <!-- Products Grid -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+    <div v-else class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
       <div 
         v-for="product in sortedProducts" 
         :key="product.id" 
@@ -69,13 +121,6 @@
         </div>
       </div>
     </div>
-
-    <!-- Product Details Modal -->
-    <ProductDetails 
-      v-if="selectedProduct" 
-      :product="selectedProduct" 
-      @close="selectedProduct = null" 
-    />
 
     <!-- Add/Edit Modal -->
     <div v-if="showAddModal" class="fixed inset-0 z-10 overflow-y-auto">
@@ -167,13 +212,15 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { useToast } from 'vue-toastification';
 import { useProductStore } from '@/store/products';
 import { useCartStore } from '@/store/cart';
-import ProductDetails from '@/components/ProductDetails.vue';
 import { useAuthStore } from '@/store/auth';
+import { useRouter, useRoute } from 'vue-router';
 
+const router = useRouter();
+const route = useRoute();
 const toast = useToast();
 const productStore = useProductStore();
 const cartStore = useCartStore();
@@ -183,9 +230,63 @@ const editingProduct = ref(null);
 const selectedCategory = ref('all');
 const selectedProduct = ref(null);
 const sortOption = ref('default');
+const selectedPriceRange = ref('all');
+const customPriceRange = ref({
+  min: '',
+  max: ''
+});
+const isPriceDropdownOpen = ref(false);
+
+// Watch for route query changes
+watch(
+  () => route.query.category,
+  (newCategory) => {
+    if (newCategory) {
+      selectedCategory.value = newCategory;
+    }
+  }
+);
+
+// Set initial category from route query
+onMounted(() => {
+  if (route.query.category) {
+    selectedCategory.value = route.query.category;
+  }
+  document.addEventListener('click', (e) => {
+    const dropdown = document.querySelector('.relative');
+    if (dropdown && !dropdown.contains(e.target)) {
+      isPriceDropdownOpen.value = false;
+    }
+  });
+});
 
 const filteredProducts = computed(() => {
-  return productStore.getProductsByCategory(selectedCategory.value);
+  let products = productStore.getProductsByCategory(selectedCategory.value);
+  
+  // Apply price range filter
+  if (selectedPriceRange.value !== 'all') {
+    products = products.filter(product => {
+      if (selectedPriceRange.value === 'custom') {
+        const min = Number(customPriceRange.value.min);
+        const max = Number(customPriceRange.value.max);
+        return product.price >= min && product.price <= max;
+      } else {
+        const range = selectedPriceRange.value;
+        
+        // Handle the "plus" ranges (e.g., "900+")
+        if (range.endsWith('+')) {
+          const min = Number(range.slice(0, -1));
+          return product.price >= min;
+        }
+        
+        // Handle normal ranges (e.g., "300-600")
+        const [min, max] = range.split('-').map(Number);
+        return product.price >= min && product.price <= max;
+      }
+    });
+  }
+  
+  return products;
 });
 
 const sortedProducts = computed(() => {
@@ -198,14 +299,8 @@ const sortedProducts = computed(() => {
     case 'name-desc':
       sorted.sort((a, b) => b.name.localeCompare(a.name));
       break;
-    case 'price-asc':
-      sorted.sort((a, b) => a.price - b.price);
-      break;
-    case 'price-desc':
-      sorted.sort((a, b) => b.price - a.price);
-      break;
     case 'sales':
-      sorted.sort((a, b) => b.soldCount - a.soldCount);
+      sorted.sort((a, b) => (b.soldCount || 0) - (a.soldCount || 0));
       break;
     default:
       break;
@@ -297,10 +392,95 @@ const handleAddToCart = (product) => {
 };
 
 const showProductDetails = (product) => {
-  selectedProduct.value = product;
+  router.push({ name: 'product-detail', params: { id: product.id }});
 };
 
 const sortProducts = () => {
   // The sorting is handled in the computed property
 };
+
+const handlePriceRangeChange = () => {
+  if (selectedPriceRange.value !== 'custom') {
+    filterProducts();
+  }
+};
+
+const applyCustomPriceRange = () => {
+  if (customPriceRange.value.min === '' || customPriceRange.value.max === '') {
+    toast.error('Please enter both minimum and maximum prices');
+    return;
+  }
+  if (Number(customPriceRange.value.min) > Number(customPriceRange.value.max)) {
+    toast.error('Minimum price cannot be greater than maximum price');
+    return;
+  }
+  filterProducts();
+};
+
+const filterProducts = () => {
+  // The filtering is already handled by the computed properties
+  // This function is just a trigger for reactivity
+  selectedPriceRange.value = selectedPriceRange.value;
+};
+
+// Add watch for custom price range changes (optional, for auto-filtering)
+watch([() => customPriceRange.value.min, () => customPriceRange.value.max], () => {
+  if (selectedPriceRange.value === 'custom' && 
+      customPriceRange.value.min !== '' && 
+      customPriceRange.value.max !== '') {
+    filterProducts();
+  }
+}, { deep: true });
+
+// Add this watch to reset price range when category changes
+watch(
+  () => selectedCategory.value,
+  (newCategory) => {
+    // Reset price range to "all" when category changes
+    selectedPriceRange.value = 'all';
+    
+    // Reset custom price range
+    customPriceRange.value = {
+      min: '',
+      max: ''
+    };
+  }
+);
+
+// Add a new computed property for price ranges based on category
+const priceRanges = computed(() => {
+  switch (selectedCategory.value) {
+    case 'Phones':
+      return [
+        { value: '300-600', label: '$300 - $600' },
+        { value: '600-900', label: '$600 - $900' },
+        { value: '900-1500', label: 'Over $900' }
+      ];
+    case 'Laptops':
+      return [
+        { value: '500-1000', label: '$500 - $1,000' },
+        { value: '1000-1500', label: '$1,000 - $1,500' },
+        { value: '1500-2000', label: '$1,500 - $2,000' },
+        { value: '1500-2500', label: '$1,500-2500' }
+      ];
+    case 'Home Appliances':
+      return [
+        { value: '500-1000', label: '$500 - $1,000' },
+        { value: '1000-1500', label: '$1,000 - $1,500' },
+        { value: '1500-2000', label: '$1,500-2000' }
+      ];
+    // Add other categories...
+    default:
+      return [
+        { value: '0-500', label: 'Under $500' },
+        { value: '500-1000', label: '$500 - $1,000' },
+        { value: '1000-2000', label: '$1,000 - $2,000' },
+      ];
+  }
+});
+
+// Add this computed property
+const hasProducts = computed(() => {
+  return productStore.products && productStore.products.length > 0;
+});
 </script>

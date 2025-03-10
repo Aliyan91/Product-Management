@@ -3,8 +3,10 @@ import { defineStore } from 'pinia'
 export const useAuthStore = defineStore('auth', {
   state: () => ({
     isAuthenticated: false,
-    user: null
+    user: null,
+    orderHistory: []
   }),
+  persist: true,
   actions: {
     login(credentials) {
       // For demo purposes, using hardcoded credentials
@@ -21,6 +23,10 @@ export const useAuthStore = defineStore('auth', {
     logout() {
       this.isAuthenticated = false;
       this.user = null;
+      this.orderHistory = [];
+    },
+    addOrder(order) {
+      this.orderHistory.unshift(order);
     }
   }
 })

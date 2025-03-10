@@ -173,24 +173,87 @@ export const useProductStore = defineStore('products', {
         isHotSelling: true,
         picture: 'https://2.img-dpreview.com/files/p/E~TC4x3S590x0~articles/1548544834/body/Canon-EOS-R6-lead-01.jpeg'
       },
-
-      // TV & Home Theater
+      // Home Appliances
       {
         id: 19,
-        name: 'LG C2 65" OLED TV',
-        description: 'Perfect blacks and G-SYNC for gaming',
-        price: 1799.99,
-        category: 'TV & Home Theater',
-        picture: 'https://www.lg.com/us/images/TV/features/OLED2022/PDP_TV-OLED-C2_Desktop_02-Intro.jpg'
+        name: 'Samsung QLED 4K TV',
+        description: 'Experience stunning picture quality with Quantum Dot technology.',
+        price: 1499.99,
+        category: 'Home Appliances',
+        picture: 'https://image-us.samsung.com/SamsungUS/home/television-home-theater/tvs/qled-4k-tvs/qn85q80cafxza/QN55Q80CAFXZA_003_L-Perspective_Titan.jpg?$product-details-jpg$'
       },
       {
         id: 20,
-        name: 'Sonos Arc',
-        description: 'Premium soundbar with Dolby Atmos',
+        name: 'LG OLED TV',
+        description: 'Enjoy perfect black and vibrant colors with OLED technology.',
+        price: 1999.99,
+        category: 'Home Appliances',
+        picture: 'https://ledshop.pk/wp-content/uploads/2024/08/evo-c4.png'
+      },
+      {
+        id: 21,
+        name: 'Sony Bravia 4K HDR TV',
+        description: 'Immerse yourself in the action with stunning HDR visuals.',
+        price: 1299.99,
+        category: 'Home Appliances',
+        picture: 'https://img.drz.lazcdn.com/static/pk/p/729e396ce1ed0dc36a17ed3833f8afc9.jpg_720x720q80.jpg'
+      },
+      {
+        id: 22,
+        name: 'TCL 6-Series 4K TV',
+        description: 'Affordable 4K TV with great performance and features.',
+        price: 799.99,
+        category: 'Home Appliances',
+        picture: 'https://m.media-amazon.com/images/I/51eCVDgH+XL.jpg'
+      },
+      {
+        id: 23,
+        name: 'Vizio Smart TV',
+        description: 'Smart TV with built-in streaming apps and voice control.',
+        price: 599.99,
+        category: 'Home Appliances',
+        picture: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR1o80d1afhsa6kDFWhdCpLShe3Yl8YuqFkHQ&s'
+      },
+      {
+        id: 24,
+        name: 'Hisense ULED TV',
+        description: 'Brilliant colors and contrast with ULED technology.',
         price: 899.99,
-        category: 'TV & Home Theater',
-        picture: 'https://media.wired.com/photos/5eb1b1ea77d77c55bc73b2af/master/w_2400,h_1800,c_limit/Gear-SonosArcWithStandingTV.jpg'
-      }
+        category: 'Home Appliances',
+        picture: 'https://hisense.hgecdn.net/medias/MABAGOR-515Wx515H-mabagor-imagelib-full-trim-7-6-7650e0501ee9977abbecc4c1a63f470d-230121-2.jpg?context=bWFzdGVyfG1hYmFnb3Jwcm9kdWN0aW1hZ2VzfDU5NDI2fGltYWdlL2pwZWd8YURRNUwyZ3lZaTg1TkRrM09EUTBNRFUyTURrMEwwMUJRa0ZIVDFJdE5URTFWM2cxTVRWSVh5OXRZV0poWjI5eUwybHRZV2RsYkdsaUwyWjFiR3d0ZEhKcGJTODNMell2TnpZMU1HVXdOVEF4WldVNU9UYzNZV0ppWldOak5HTXhZVFl6WmpRM01HUmZNak13TVRJeFh6SXVhbkJufGVhYmUwYThjMWQyOTY0MTVjYmZiNzU2YTExYmUzZDZhMzBkNzk2MTUwYmIwZjAxNGU2NDQ1Y2ZlZThlZDI5ZGU'
+      },
+      {
+        id: 25,
+        name: 'Philips Ambilight TV',
+        description: 'Unique Ambilight technology for an immersive viewing experience.',
+        price: 1399.99,
+        category: 'Home Appliances',
+        picture: 'https://static3.webx.pk/files/4012/Images/1-4012-1277703-160922065358521.jpg'
+      },
+      {
+        id: 26,
+        name: 'Panasonic 4K Ultra HD TV',
+        description: 'High-quality 4K display with advanced color processing.',
+        price: 1099.99,
+        category: 'Home Appliances',
+        picture: 'https://store.in.panasonic.com/media/catalog/product/cache/40b589206cef99ab7dca1586fe425968/t/h/th-43mx750dx_info_1_new.webp'
+      },
+      {
+        id: 27,
+        name: 'Sharp Aquos 4K TV',
+        description: 'Sharp picture quality with advanced image processing.',
+        price: 799.99,
+        category: 'Home Appliances',
+        picture: 'https://res.cloudinary.com/sharp-consumer-eu/image/fetch/w_3000,f_auto/https://s3.infra.brandquad.io/accounts-media/SHRP/DAM/origin/35b03086-6ce5-11ea-939a-becc10303f49.jpg'
+      },
+      {
+        id: 28,
+        name: 'Roku Smart TV',
+        description: 'Easy access to thousands of streaming channels.',
+        price: 499.99,
+        category: 'Home Appliances',
+        picture: 'https://cigars.roku.com/v1/http%3A%2F%2Fimage.roku.com%2Fw%2Frapid%2Fimages%2Fpdp-carousel-items%2F343c4ea7-e52d-445a-a391-f9f112d3d795.jpg'
+      },
     ],
     categories: [
       'Phones',
@@ -200,9 +263,11 @@ export const useProductStore = defineStore('products', {
       'Wearables',
       'Gaming',
       'Cameras',
-      'TV & Home Theater'
-    ]
+      'Home Appliances'
+    ],
+    isInitialized: false
   }),
+  persist: true,
 
   getters: {
     getProductsByCategory: (state) => (category) => {
@@ -243,6 +308,13 @@ export const useProductStore = defineStore('products', {
       const index = this.products.findIndex(p => p.id === id)
       if (index !== -1) {
         this.products.splice(index, 1)
+      }
+    },
+
+    initialize() {
+      if (!this.isInitialized) {
+        // Any initialization logic if needed
+        this.isInitialized = true;
       }
     }
   }
