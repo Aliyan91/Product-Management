@@ -6,7 +6,7 @@
           <input 
             type="text" 
             v-model="username" 
-            placeholder="Username" 
+            placeholder="Email" 
             required 
           />
           <input 
@@ -18,6 +18,15 @@
           <button type="submit">Login</button>
           <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
         </form>
+        
+        <div class="mt-4 text-center">
+          <p class="text-gray-400">
+            Don't have an account?
+            <RouterLink to="/register" class="text-indigo-400 hover:text-indigo-300 font-medium">
+              Sign up
+            </RouterLink>
+          </p>
+        </div>
       </div>
     </div>
   </template>

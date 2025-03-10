@@ -45,6 +45,12 @@ const router = createRouter({
       component: () => import('@/views/AccountView.vue'),
       meta: { requiresAuth: true }
     },
+    {
+      path: '/register',
+      name: 'register',
+      component: () => import('@/views/RegisterView.vue'),
+      meta: { requiresAuth: false }
+    },
   //   {
   //     path: '/',
   //     name: 'dashboard',
@@ -61,13 +67,13 @@ router.beforeEach((to, from, next) => {
   // Initialize product store
   productStore.initialize()
   
-  // If route requires auth and user is not authenticated
-  if (to.meta.requiresAuth && !authStore.isAuthenticated) {
-    next('/login')
-  }
-  // If user is authenticated and trying to access login page
-  else if (authStore.isAuthenticated && to.name === 'login') {
+  // If user is authenticated and trying to access login or register
+  if (authStore.isAuthenticated && (to.name === 'login' || to.name === 'register')) {
     next('/')
+  }
+  // If route requires auth and user is not authenticated
+  else if (to.meta.requiresAuth && !authStore.isAuthenticated) {
+    next('/login')
   }
   else {
     next()
