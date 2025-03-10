@@ -19,8 +19,8 @@
     </div>
     
     <!-- Show category count -->
-    <div class="debug-info">
-      <p>Total categories: {{ categories.length }}</p>
+    <div class="debug-info bg-gray-700">
+      <p class="text-gray-200">Total categories: {{ categories.length }}</p>
     </div>
     
     <div class="content-body">
@@ -83,77 +83,169 @@
     </div>
 
     <!-- Add Category Modal -->
-    <div v-if="showAddCategoryModal" class="modal-overlay">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h2>Add New Category</h2>
-          <button class="close-button" @click="closeAddCategoryModal">&times;</button>
+    <div v-if="showAddCategoryModal" class="fixed inset-0 z-50 overflow-y-auto">
+      <div class="flex min-h-screen items-center justify-center px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+        <!-- Background overlay -->
+        <div class="fixed inset-0 transition-opacity" aria-hidden="true">
+          <div class="absolute inset-0 bg-gray-900 bg-opacity-75 backdrop-blur-sm"></div>
         </div>
-        <form @submit.prevent="saveCategory" class="styled-form">
-          <div class="form-group">
-            <label>Category Name*</label>
-            <input 
-              v-model.trim="newCategory.name" 
-              type="text" 
-              required 
-              class="styled-input"
-              placeholder="Enter category name" 
-            />
+
+        <!-- Modal panel -->
+        <div class="inline-block transform overflow-hidden rounded-lg bg-gray-800 text-left align-bottom shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:align-middle">
+          <div class="bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+            <div class="sm:flex sm:items-start">
+              <div class="mt-3 w-full text-center sm:mt-0 sm:text-left">
+                <div class="flex items-center justify-between border-b border-gray-700 pb-4">
+                  <h3 class="text-xl font-semibold leading-6 text-white">
+                    Add New Category
+                  </h3>
+                  <button 
+                    @click="closeAddCategoryModal" 
+                    class="rounded-md bg-gray-800 p-1 text-gray-400 hover:text-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  >
+                    <span class="sr-only">Close</span>
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+
+                <!-- Form -->
+                <form @submit.prevent="saveCategory" class="mt-4 space-y-6">
+                  <!-- Category Name -->
+                  <div>
+                    <label class="block text-sm font-medium text-gray-200">
+                      Category Name<span class="ml-1 text-red-500">*</span>
+                    </label>
+                    <input 
+                      v-model.trim="newCategory.name"
+                      type="text"
+                      required
+                      placeholder="Enter category name"
+                      class="mt-1 block w-full rounded-md border border-gray-600 bg-gray-700 px-3 py-2 text-white placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 sm:text-sm"
+                    />
+                  </div>
+
+                  <!-- Category Code -->
+                  <div>
+                    <label class="block text-sm font-medium text-gray-200">
+                      Category Code<span class="ml-1 text-red-500">*</span>
+                    </label>
+                    <input 
+                      v-model.trim="newCategory.code"
+                      type="text"
+                      required
+                      placeholder="Enter category code"
+                      class="mt-1 block w-full rounded-md border border-gray-600 bg-gray-700 px-3 py-2 text-white placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 sm:text-sm"
+                    />
+                  </div>
+
+                  <!-- Parent Category -->
+                  <div>
+                    <label class="block text-sm font-medium text-gray-200">
+                      Parent Category
+                    </label>
+                    <select 
+                      v-model="newCategory.parent"
+                      class="mt-1 block w-full rounded-md border border-gray-600 bg-gray-700 px-3 py-2 text-white shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 sm:text-sm"
+                    >
+                      <option value="">None</option>
+                      <option 
+                        v-for="cat in categories" 
+                        :key="cat.id" 
+                        :value="cat.name"
+                        :disabled="cat.parent"
+                      >
+                        {{ cat.name }}
+                      </option>
+                    </select>
+                  </div>
+
+                  <!-- Description -->
+                  <div>
+                    <label class="block text-sm font-medium text-gray-200">
+                      Description
+                    </label>
+                    <textarea 
+                      v-model.trim="newCategory.description"
+                      rows="4"
+                      placeholder="Enter category description"
+                      class="mt-1 block w-full rounded-md border border-gray-600 bg-gray-700 px-3 py-2 text-white placeholder-gray-400 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 sm:text-sm"
+                    ></textarea>
+                  </div>
+
+                  <!-- Status -->
+                  <div>
+                    <label class="block text-sm font-medium text-gray-200">
+                      Status<span class="ml-1 text-red-500">*</span>
+                    </label>
+                    <select 
+                      v-model="newCategory.status"
+                      required
+                      class="mt-1 block w-full rounded-md border border-gray-600 bg-gray-700 px-3 py-2 text-white shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 sm:text-sm"
+                    >
+                      <option value="Active">Active</option>
+                      <option value="Inactive">Inactive</option>
+                    </select>
+                  </div>
+
+                  <!-- Sort Order -->
+                  <div>
+                    <label class="block text-sm font-medium text-gray-200">
+                      Sort Order<span class="ml-1 text-red-500">*</span>
+                    </label>
+                    <input 
+                      v-model.number="newCategory.displayOrder"
+                      type="number"
+                      min="0"
+                      required
+                      class="mt-1 block w-full rounded-md border border-gray-600 bg-gray-700 px-3 py-2 text-white shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 sm:text-sm"
+                    />
+                  </div>
+                </form>
+              </div>
+            </div>
           </div>
-          <div class="form-group">
-            <label>Category Code*</label>
-            <input 
-              v-model.trim="newCategory.code" 
-              type="text" 
-              required 
-              class="styled-input"
-              placeholder="Enter category code" 
-            />
-          </div>
-          <div class="form-group">
-            <label>Parent Category</label>
-            <select v-model="newCategory.parent" class="styled-select">
-              <option value="">None</option>
-              <option 
-                v-for="cat in categories" 
-                :key="cat.id" 
-                :value="cat.name"
-                :disabled="cat.parent"
+
+          <!-- Modal footer -->
+          <div class="bg-gray-800 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
+            <button
+              type="submit"
+              @click="saveCategory"
+              class="inline-flex w-full justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:ml-3 sm:w-auto"
+              :class="{ 'opacity-75 cursor-not-allowed': isLoading }"
+              :disabled="isLoading"
+            >
+              <svg
+                v-if="isLoading"
+                class="mr-2 h-4 w-4 animate-spin"
+                viewBox="0 0 24 24"
               >
-                {{ cat.name }}
-              </option>
-            </select>
+                <circle
+                  class="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  stroke-width="4"
+                ></circle>
+                <path
+                  class="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                ></path>
+              </svg>
+              {{ isLoading ? 'Saving...' : 'Save Category' }}
+            </button>
+            <button
+              type="button"
+              @click="closeAddCategoryModal"
+              class="mt-3 inline-flex w-full justify-center rounded-md border border-gray-600 bg-gray-700 px-3 py-2 text-sm font-semibold text-gray-200 shadow-sm hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto"
+            >
+              Cancel
+            </button>
           </div>
-          <div class="form-group">
-            <label>Description</label>
-            <textarea 
-              v-model.trim="newCategory.description" 
-              class="styled-textarea"
-              placeholder="Enter category description"
-            ></textarea>
-          </div>
-          <div class="form-group">
-            <label>Status*</label>
-            <select v-model="newCategory.status" required class="styled-select">
-              <option value="Active">Active</option>
-              <option value="Inactive">Inactive</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>Sort Order*</label>
-            <input 
-              v-model.number="newCategory.displayOrder" 
-              type="number" 
-              min="0" 
-              required 
-              class="styled-input" 
-            />
-          </div>
-          <div class="modal-actions">
-            <button type="button" class="btn btn-secondary" @click="closeAddCategoryModal">Cancel</button>
-            <button type="submit" class="btn btn-primary">Save Category</button>
-          </div>
-        </form>
+        </div>
       </div>
     </div>
 
@@ -574,81 +666,93 @@ const backToAdmin = () => router.push('/admin')
 
 /* Search and filter section */
 .search-filter {
-  background-color: white;
-  padding: 16px;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  background-color: #1a1f37;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   margin-bottom: 24px;
   display: flex;
-  gap: 16px;
+  gap: 20px;
   align-items: center;
 }
 
 .search-input {
-  max-width: 300px;
-  padding: 8px 12px;
-  border: 1px solid #ddd;
-  border-radius: 6px;
+  background-color: #252e47;
+  border: 1px solid #353e59;
+  color: #ffffff;
+  padding: 10px 16px;
+  border-radius: 8px;
+  width: 300px;
   font-size: 14px;
 }
 
+.search-input::placeholder {
+  color: #8a8d98;
+}
+
 .status-select {
-  padding: 8px 12px;
-  border: 1px solid #ddd;
-  border-radius: 6px;
+  background-color: #252e47;
+  border: 1px solid #353e59;
+  color: #ffffff;
+  padding: 10px 16px;
+  border-radius: 8px;
+  min-width: 150px;
   font-size: 14px;
-  min-width: 120px;
 }
 
 /* Data table styles */
 .data-table {
-  background-color: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  background-color: #1a1f37;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   overflow: hidden;
+  margin-top: 24px;
 }
 
 table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
 }
 
 th {
-  background-color: #f8f9fa;
-  padding: 12px 16px;
+  background-color: #252e47;
+  padding: 16px;
   text-align: left;
   font-weight: 600;
-  color: #2c3e50;
-  border-bottom: 2px solid #ddd;
+  color: #ffffff;
+  border-bottom: 2px solid #353e59;
 }
 
 td {
-  padding: 14px 16px;
-  border-bottom: 1px solid #eee;
-  color: #444;
+  padding: 16px;
+  color: #e4e6eb;
+  border-bottom: 1px solid #353e59;
 }
 
 tr:hover {
-  background-color: #f8f9fa;
+  background-color: #252e47;
 }
 
 /* Status badge */
 .status-badge {
-  padding: 4px 10px;
+  padding: 6px 12px;
   border-radius: 50px;
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.5px;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+  display: inline-flex;
+  align-items: center;
 }
 
 .status-badge.active {
-  background-color: rgba(46, 139, 87, 0.15);
-  color: #2E8B57;
+  background-color: rgba(46, 213, 115, 0.15);
+  color: #2ed573;
 }
 
 .status-badge.inactive {
-  background-color: rgba(211, 47, 47, 0.15);
-  color: #D32F2F;
+  background-color: rgba(255, 71, 87, 0.15);
+  color: #ff4757;
 }
 
 /* Action buttons */
@@ -683,50 +787,48 @@ tr:hover {
 
 /* Button styles */
 .btn {
-  padding: 8px 16px;
-  border-radius: 6px;
+  padding: 10px 20px;
+  border-radius: 8px;
   font-weight: 500;
-  cursor: pointer;
-  transition: all 0.3s ease;
+  font-size: 14px;
+  transition: all 0.2s ease;
 }
 
 .btn-primary {
-  background-color: #4CAF50;
+  background-color: #4f46e5;
   color: white;
   border: none;
-  cursor: pointer;
+}
+
+.btn-primary:hover {
+  background-color: #4338ca;
+  transform: translateY(-1px);
 }
 
 .btn-secondary {
-  background-color: #f1f1f1;
-  color: #333;
-  border: 1px solid #ccc;
-  cursor: pointer;
+  background-color: #252e47;
+  color: #e4e6eb;
+  border: 1px solid #353e59;
 }
 
-/* Modal styles */
+.btn-secondary:hover {
+  background-color: #2a3349;
+  transform: translateY(-1px);
+}
+
+/* Modal styling improvements */
 .modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
+  background-color: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
 }
 
 .modal-content {
-  background-color: white;
-  border-radius: 8px;
-  padding: 24px;
-  width: 90%;
+  background-color: #1a1f37;
   max-width: 500px;
-  max-height: 90vh;
-  overflow-y: auto;
-  padding-bottom: 70px;
+  width: 90%;
+  border-radius: 12px;
+  border: 1px solid #353e59;
+  padding: 24px;
 }
 
 .modal-header {
@@ -734,92 +836,144 @@ tr:hover {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #353e59;
 }
 
 .modal-header h2 {
+  color: #ffffff;
+  font-size: 1.5rem;
+  font-weight: 600;
   margin: 0;
-  color: #2c3e50;
 }
 
-/* Form styles */
+.close-button {
+  background: none;
+  border: none;
+  color: #8a8d98;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.close-button:hover {
+  color: #ffffff;
+  background-color: #252e47;
+}
+
+/* Form styling within modal */
 .styled-form {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 20px;
 }
 
 .form-group {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  margin-bottom: 15px;
 }
 
 .form-group label {
+  color: #e4e6eb;
+  font-size: 0.9rem;
   font-weight: 500;
-  color: #2c3e50;
+}
+
+.form-group label .required {
+  color: #ff4757;
+  margin-left: 4px;
 }
 
 .styled-input,
 .styled-select,
 .styled-textarea {
-  padding: 8px 12px;
-  border: 1px solid #ddd;
-  border-radius: 6px;
+  background-color: #252e47;
+  border: 1px solid #353e59;
+  color: #e4e6eb;
+  padding: 12px 16px;
+  border-radius: 8px;
   font-size: 14px;
+  width: 100%;
+  transition: all 0.2s ease;
+}
+
+.styled-input::placeholder,
+.styled-select::placeholder,
+.styled-textarea::placeholder {
+  color: #8a8d98;
+}
+
+.styled-input:focus,
+.styled-select:focus,
+.styled-textarea:focus {
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2);
+  outline: none;
 }
 
 .styled-textarea {
-  min-height: 100px;
+  min-height: 120px;
   resize: vertical;
+}
+
+.styled-select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238a8d98' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 40px;
+}
+
+.styled-select option {
+  background-color: #1a1f37;
+  color: #e4e6eb;
 }
 
 /* Modal actions */
 .modal-actions {
   display: flex;
   justify-content: flex-end;
-  gap: 10px;
-  margin-top: 20px;
-  position: relative;
-  z-index: 10;
+  gap: 12px;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid #353e59;
 }
 
 .modal-actions button {
-  min-width: 100px;
-  padding: 8px 16px;
+  padding: 10px 24px;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 14px;
+  transition: all 0.2s ease;
 }
 
 /* Notification styles */
 .notification {
-  padding: 12px 20px;
-  margin-bottom: 20px;
-  border-radius: 4px;
+  padding: 16px 24px;
+  border-radius: 8px;
   font-weight: 500;
-  animation: fadeIn 0.3s ease-out;
-  position: relative;
+  margin-bottom: 24px;
 }
 
 .notification.success {
-  background-color: rgba(76, 175, 80, 0.15);
-  color: #2E8B57;
-  border-left: 4px solid #4CAF50;
+  background-color: rgba(46, 213, 115, 0.1);
+  color: #2ed573;
+  border-left: 4px solid #2ed573;
 }
 
 .notification.error {
-  background-color: rgba(211, 47, 47, 0.15);
-  color: #D32F2F;
-  border-left: 4px solid #D32F2F;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
+  background-color: rgba(255, 71, 87, 0.1);
+  color: #ff4757;
+  border-left: 4px solid #ff4757;
 }
 
 /* Debug info and no categories message */
 .debug-info,
 .no-categories {
-  background-color: white;
+  
   padding: 16px;
   border-radius: 8px;
   margin-bottom: 16px;

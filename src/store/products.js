@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+import { ref, computed, onMounted } from 'vue'
 
 // Simple ID generation function
 function generateId() {
@@ -339,9 +340,8 @@ export const useProductStore = defineStore('products', {
     },
 
     initialize() {
-      // Any initialization logic if needed
       console.log('Product store initialized');
-      // You can leave this empty if no initialization is needed
+      this.isInitialized = true;
     }
   }
 })

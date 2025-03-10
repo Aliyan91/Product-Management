@@ -18,7 +18,7 @@
         {{ notification.message }}
       </div>
       
-      <div class="search-filter">
+      <div class= "search-filter">
         <input type="text" 
                placeholder="Search by Order ID or Username..." 
                class="search-input"
@@ -747,7 +747,7 @@ const backToAdmin = () => {
   display: flex;
   align-items: center;
   gap: 8px;
-  background-color: white;
+  background-color: #565555;
   border: 1px solid #CCCCCC;
   border-radius: var(--radius-sm);
   padding: 4px 12px;
